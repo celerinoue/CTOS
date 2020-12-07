@@ -165,7 +165,7 @@ def fig_effects_per_drug(data, drg_num, estimator, ci):
         savepath = f'./result/fig/{estimator}_plot/fig_{estimator}_ci_{ci}_drug_all.png'
 
     sns.set_palette('Set3')
-    sns.catplot(x='day', y='value', data=data, kind='point',
+    sns.catplot(x='day', y='tumor growth rate', data=data, kind='point',
                 hue='patient_id', estimator=e, ci=ci, height=8, aspect=2)
     #  Defaults are size=5, aspect=1
     plt.hlines(1, -0.3, 8.3, '#D88C8C', linestyles='dashed')  # 補助線
