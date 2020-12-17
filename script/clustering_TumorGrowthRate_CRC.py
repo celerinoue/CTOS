@@ -34,7 +34,6 @@ def clustering(data, drug_index):
         plt.figure(figsize=(30, 15))
         plt.rcParams["font.family"] = 'Times New Roman'
         plt.rcParams['font.size'] = 30
-        #plt.rcParams['figure.subplot.bottom'] = 0.30
         plt.title(
             f'Clustering Dendrogram : {drug_index["drug_name"][i]}', fontsize=50)
         plt.xlabel('CTOS_line', fontsize=40)
