@@ -1,6 +1,6 @@
 # Author: S. Inoue and yoshi
 # Date: 9/18/2020
-# Updated: 11/16/2020
+# Updated: 12/17/2020
 # Project: CTOS
 # Scropt: To generate dataset from raw microarray data for BN input
 # Array dataset: CRC or SCNEC
@@ -96,4 +96,3 @@ if __name__ == '__main__':
     # save
     # save_file('data_row.txt', data_row)
     save_file('../data/dataset_final.txt', data_final)
-
