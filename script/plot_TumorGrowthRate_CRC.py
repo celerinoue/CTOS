@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 import os
 import sys
 import itertools
+import pickle
 from scipy import stats
 
 
@@ -21,15 +22,18 @@ def data_load(filename):
     return data
 
 # Data Transforming
+
+
 def data_transform(data):
     ## patient_id 4
     # 7.Irinotecan_10mg → Irinotecan_3mg, 8.Irinotecan_30mg → Irinotecan_10mg
-    data[data["patient_id"] == 4] = data[data["patient_id"] == 4].replace({7:6, 8:7, 'Irinotecan_10mg':'Irinotecan_3mg', 'Irinotecan_30mg':'Irinotecan_10mg'})
+    data[data["patient_id"] == 4] = data[data["patient_id"] == 4].replace(
+        {7: 6, 8: 7, 'Irinotecan_10mg': 'Irinotecan_3mg', 'Irinotecan_30mg': 'Irinotecan_10mg'})
 
     ## Convert all value to multiplier
-    day_list = ["04", "07", "11", "14", "18", "21", "25", "28"] # day list without 00
-    for l in day_list:
-        data[l] = data[l] / data["00"] # multiplier
+    day_list = ["00", "04", "07", "11", "14", "18", "21", "25", "28"]
+    for l in day_list[1:]:  # day list without 00
+        data[l] = data[l] / data["00"]  # multiplier
     data["00"] = 1  # day 00
 
     ## Transform the data format
@@ -39,7 +43,7 @@ def data_transform(data):
     l_ = []
     for pat, drg, sub in itertools.product(pat_list, drug_list, sub_list):
         data_row = data[(data['patient_id'] == pat) & (data['drug_id'] == drg) & (
-        data['subject_id'] == sub)]  # Specify a column from data
+            data['subject_id'] == sub)]  # Specify a column from data
         # define (day, value) from data
         value = data_row.iloc[:, 4:].T.reset_index()
         value.columns = ['day', 'value']  # column names of (day, value)
@@ -48,11 +52,42 @@ def data_transform(data):
         matrix = pd.concat([index, value], axis=1).fillna(method='ffill')
         l_.append(matrix)
     data_val = pd.concat(l_, axis=0).reset_index(drop=True)
-    data_val = data_val.astype({'patient_id': int, 'drug_id': int, 'subject_id': int, 'day': int}) #intに変換
+    data_val = data_val.astype(
+        {'patient_id': int, 'drug_id': int, 'subject_id': int, 'day': int})  # intに変換
 
+    # 薬剤の名前とIDのmatrix保存
+    drug_index = data_val.drop_duplicates(
+        'drug_id').iloc[:, 1:3].reset_index(drop=True)
+    drug_index.to_csv('./result/matrix/drug_index.csv')
+
+    #================
+    # 7 matrix of tumor growth rate
+    # 10(samples)-by-9(timepoint: 0, 4, 7, 11, 14, 18, 21, 25, 28)
+
+    # (薬剤*全日程のtumor growth rate)のlistを作成 l_value
+    l_value = []
+    for l_drg, l_pat in itertools.product(drug_list, pat_list):
+        l_ = data_val.query(f'(drug_id == {l_drg}) & (patient_id == {l_pat})').groupby(
+            'day')['value'].median().reset_index(drop=True)
+        l_value.append(l_)
+        #b = pd.DataFrame(l_value, index = pat_list)
+        #l_df.append(b)
+
+    # matrixに変換
+    l_value_ = list(np.array_split(l_value, 7))  # reshape the list
+    l_gr = []  # list of tumor growth rates
+    for i in drug_list:
+        gr_ = pd.DataFrame(l_value_[i-1], index=pat_list, columns=day_list)
+        l_gr.append(gr_)
+    with open('./result/matrix/tumor_growth_rate.pickle', mode='wb') as f:
+        pickle.dump(l_gr, f)
+        f.close
+    print(f'[SAVE]: list of tumor growth rates as tumor_growth_rate.pickle')
+
+    #=================
     print('[INFO] TRANSFORMED THE DATA!!')
     print(f'data shape: {data_val.shape}')
-    return data_val, pat_list, drug_list
+    return data_val, pat_list, drug_list, day_list, drug_index, l_gr
 
 
 # write factorplot [mean, median]
@@ -179,7 +214,7 @@ def fig_effects_per_drug(data, drg_num, estimator, ci):
 
 if __name__ == '__main__':
     CTOSdata_ = data_load('./data/CTOS_result.csv')  # load the data
-    CTOSdata, pat_list, drug_list = data_transform(CTOSdata_)
+    CTOSdata, pat_list, drug_list, day_list, drug_index, l_gr = data_transform(CTOSdata_)
 
     # Figure write [per patient]
     for l in pat_list:
