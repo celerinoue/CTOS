@@ -41,7 +41,7 @@ def clustering(data, drug_index):
         dendrogram(z, leaf_font_size=40, color_threshold=7.,
                    labels=labels, above_threshold_color='black')
         # save & show
-        savepath = f'./result/z_fig/clustering_TumorGrowthRate/fig_clustering_{drug_index["drug_name"][i]}.png'
+        savepath = f'./result/fig/IDEA1_1/clustering_TumorGrowthRate/fig_clustering_{drug_index["drug_name"][i]}.png'
         plt.savefig(savepath, dpi=300, format='png',
                     bbox_inches="tight")  # save
         print(f'[SAVE]: {savepath}')
@@ -49,26 +49,11 @@ def clustering(data, drug_index):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     # data load
     l_gr, drug_index = data_load(
-        './result/matrix/tumor_growth_rate.pickle',
-        './result/matrix/drug_index.csv')
+        './result/txt/IDEA1_1/tumor_growth_rate.pickle',
+        './result/txt/IDEA1_1/drug_index.csv')
 
     # plot
     clustering(l_gr, drug_index)

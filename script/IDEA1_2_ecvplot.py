@@ -143,6 +143,17 @@ def scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_gr_d28):
     return
 
 
+def corr_matrix(list_corr, data_ecv, data_drug_name):
+    for i in range(len(list_corr)):
+        data_corr = data_ecv.iloc[:, :2]
+        data_corr['CorrelationCoefficients'] = list_corr[i]
+        # save
+        savepath = f'./result/txt/IDEA1_2/CorrelationCoefficients_{data_drug_name["drug_name"][i]}.txt'
+        data_corr.to_csv(savepath, sep='\t')
+    return
+
+
+
 if __name__ == '__main__':
     # load the data
     data_ecv_, list_gr_, data_drug_name = data_load()
@@ -152,3 +163,5 @@ if __name__ == '__main__':
     list_corr = corrplot(data_ecv, data_drug_name, list_gr_d28)
     # scatter plot
     scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_gr_d28)
+    # corr matrix
+    corr_matrix(list_corr, data_ecv, data_drug_name)
