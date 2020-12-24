@@ -21,13 +21,13 @@ def data_load():
     print(f'[LOAD]: {file_1}, input matrix: {data_ecv_.shape}')
 
     # [LOAD] tumor growth rate data
-    file_2 = 'result/matrix/tumor_growth_rate.pickle'
+    file_2 = 'result/txt/IDEA1_1/tumor_growth_rate.pickle'
     with open(file_2, 'rb') as f:
         list_gr_ = pickle.load(f)
         print(f'[LOAD]: {file_2}, list length: {len(list_gr_)}')
 
     # [LOAD] drug name list
-    file_3 = 'result/matrix/drug_index.csv'
+    file_3 = 'result/txt/drug_index.csv'
     data_drug_name = pd.read_csv(file_3, sep=',', header=0, index_col=0)
     print(f'[LOAD]: {file_3}, input matrix: {data_drug_name.shape}')
 
@@ -90,7 +90,7 @@ def corrplot(data_ecv, data_drug_name, list_gr_d28):
         plt.xlabel(
             'Correlation coefficients between tumor growth rate [day28] and every ECv', fontsize=25)
         plt.ylabel('Density', fontsize=25)
-        sns.distplot(list_corr[l], color=colorlist[l])
+        sns.distplot(list_corr[l], color=colorlist[l], kde=False)
         # save
         savepath = f'./result/fig/IDEA1_2/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
@@ -149,7 +149,7 @@ def corr_matrix(list_corr, data_ecv, data_drug_name):
         data_corr['CorrelationCoefficients'] = list_corr[i]
         # save
         savepath = f'./result/txt/IDEA1_2/CorrelationCoefficients_{data_drug_name["drug_name"][i]}.txt'
-        data_corr.to_csv(savepath, sep='\t')
+        data_corr.to_csv(savepath, sep='\t', index=False)
     return
 
 

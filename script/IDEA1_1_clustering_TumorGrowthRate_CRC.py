@@ -31,7 +31,7 @@ def clustering(data, drug_index):
         z = linkage(d, method='ward')
         # plot
         plt.figure(figsize=(30, 15))
-        plt.rcParams["font.family"] = 'Times New Roman'
+        plt.rcParams["font.family"] = 'sans-serif'
         plt.rcParams['font.size'] = 30
         plt.title(
             f'Clustering Dendrogram : {drug_index["drug_name"][i]}', fontsize=50)
