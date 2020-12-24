@@ -89,7 +89,7 @@ def corrplot(data_ecv, data_drug_name, list_gr_d28):
             f'Distribution of Correlation Coefficients [{data_drug_name["drug_name"][l]}]', fontsize=30)
         plt.xlabel(
             'Correlation coefficients between tumor growth rate [day28] and every ECv', fontsize=25)
-        plt.ylabel('Density', fontsize=25)
+        plt.ylabel('Count', fontsize=25)
         sns.distplot(list_corr[l], color=colorlist[l], kde=False)
         # save
         savepath = f'./result/fig/IDEA1_2/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
