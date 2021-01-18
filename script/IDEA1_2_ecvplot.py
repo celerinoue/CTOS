@@ -99,7 +99,7 @@ def corrplot(data_ecv, data_drug_name, list_tgr_d28):
     return list_corr
 
 
-def scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_gr_d28):
+def scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_tgr_d28):
     for d in range(len(data_drug_name['drug_name'])):
         # information
         ecv_index = list(list_corr[d]).index(max(list_corr[d]))
