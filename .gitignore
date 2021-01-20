@@ -7,6 +7,10 @@ z_*
 z_*/
 result/
 
+*.ipynb
+
+
+
 
 # C extensions
 *.so
