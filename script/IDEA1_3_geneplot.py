@@ -1,3 +1,9 @@
+# Author: S.Inoue
+# Date: 01/21/2021
+# Updated: 01/21/2021
+# Project: CTOS folfoliox project
+# Script: To perform basic analyses
+
 # import module
 import numpy as np
 import pandas as pd
@@ -7,8 +13,6 @@ import seaborn as sns
 import itertools
 
 # load the data
-
-
 def data_load():
     # [LOAD] gene exprssion data
     file_1 = 'data/CRC_dataset.txt'
