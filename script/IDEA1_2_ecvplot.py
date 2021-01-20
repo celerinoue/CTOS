@@ -1,6 +1,6 @@
 # Author: S.Inoue
 # Date: 12/21/2020
-# Updated: 01/20/2021
+# Updated: 01/21/2021
 # Project: CTOS folfoliox project
 # Script: To perform basic analyses
 
@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import itertools
 
-
 # load the data
 def data_load():
     # [LOAD] ECv data
@@ -20,7 +19,7 @@ def data_load():
     data_ecv_ = pd.read_table(file_1, sep='\t', header=0)
     print(f'[LOAD]: {file_1}, input matrix: {data_ecv_.shape}')
 
-    # [LOAD] tumor growth rate data
+    # [LOAD] tumor growth rate data (TGR data, drug1~7)
     file_2 = 'result/txt/IDEA1_1/tumor_growth_rate.pickle'
     with open(file_2, 'rb') as f:
         list_tgr_ = pickle.load(f)
@@ -34,6 +33,7 @@ def data_load():
     return data_ecv_, list_tgr_, data_drug_name
 
 
+# reshape
 # reshape
 def reshape(data_ecv_, list_tgr_):
     # reshape data_ecv
@@ -58,19 +58,20 @@ def reshape(data_ecv_, list_tgr_):
         list_tgr_d28.append(tgr_d28_)
 
     print('[INFO] reshape the data')
+
     return data_ecv, list_tgr_d28
 
 
-# calculate correlation between ECv and TGR, and plot distribution
-def corrplot(data_ecv, data_drug_name, list_tgr_d28):
+# ============================== calculate ==============================
+
+# calculate correlation between [ECv & TGR]
+def calculate_corr_ecv_tgr(data_ecv, data_drug_name, list_tgr_d28):
     list_corr_ = []
     for d, i in itertools.product(range(len(data_drug_name['drug_name'])), range(len(data_ecv))):
-        # array tumor growth rate
-        array_tgr = np.array(list_tgr_d28[d], dtype='float64').reshape(
-            10,)  # drug 0~6 → 1
-        # array ecv
-        array_ecv = np.array(
-            data_ecv.iloc[i, 2:], dtype='float64')  # ecv 0~78858 → 1
+        # array TGR
+        array_tgr = np.array(list_tgr_d28[d], dtype='float64').reshape(10,)  # drug 0~6 → 1
+        # array gene
+        array_ecv = np.array(data_ecv.iloc[i, 2:], dtype='float64')  # ecv 0~78858 → 1
         # corr
         corr = np.corrcoef(array_tgr, array_ecv)[0, 1]
         # append
@@ -78,44 +79,75 @@ def corrplot(data_ecv, data_drug_name, list_tgr_d28):
     #reshape
     list_corr = np.array(list_corr_).reshape(len(data_drug_name['drug_name']), -1)
 
+    return list_corr
+
+# calculate range of ECv max-min value and save matrix
+def cal_ecv_range(data_ecv, data_drug_name, list_corr):
+    # calculate range of ECv max-min value
+    list_ecv_range = []
+    for i in range(len(data_ecv)):
+        ecv_max = data_ecv.iloc[i, 2:].max()  # LINE1~10の中でのECvの最大値
+        ecv_min = data_ecv.iloc[i, 2:].min()  # LINE1~10の中でのECvの最小値
+        ecv_range = abs(ecv_max - ecv_min)  # 絶対値(最大値 - 最小値)
+        list_ecv_range.append(ecv_range)
+    print(f'[INFO] make list of ECv max-min range [shape = {len(list_ecv_range)}]')
+
+    # make matrix [1.parent, 2.child, 3.corr, 4.range_ecv]
+    for d in range(len(data_drug_name)):
+        matrix = data_ecv.iloc[:, :2]  # 1,2列目
+        matrix['CorrelationCoefficients'] = list_corr[d]
+        matrix['range_ecv'] = list_ecv_range  # 4列目
+        # save
+        savepath = f'result/txt/IDEA1_2/1_matrix_corr_and_range_ecv/CorrelationCoefficients_{data_drug_name["drug_name"][d]}.txt'
+        matrix.to_csv(savepath, sep='\t', index=False)
+
+    return list_ecv_range
+
+
+# ============================== figure ==============================
+
+# plot distribution of correlation values[ECv & TGR]
+def plot_distribution_corr_ecv_tgr(list_corr, data_drug_name):
     for l in range(len(list_corr)):
         # (Cetuximab, Oxaliplatin, Irinotecan) = (green, blue, red)
-        colorlist = ["#999999", "#9BC99B", "#3FBF3F",
-                    "#9BA7C9", "#3F5FBF", "#D88C8C", "#BF3F3F"]
+        colorlist = ["#999999",  # gray
+                     "#9BC99B", "#3FBF3F",  # green
+                     "#9BA7C9", "#3F5FBF",  # blue
+                     "#D88C8C", "#BF3F3F"  # red
+                     ]
         # plot
         plt.figure(figsize=(30, 15))
         plt.rcParams["font.family"] = 'sans-serif'
         plt.rcParams['font.size'] = 25
-        plt.title(
-            f'Distribution of Correlation Coefficients [{data_drug_name["drug_name"][l]}]', fontsize=30)
-        plt.xlabel(
-            'Correlation coefficients between tumor growth rate [day28] and every ECv', fontsize=25)
-        plt.ylabel('Count', fontsize=25)
+        plt.title(f'Distribution of Correlation Coefficients between ECv and Tumor Growth Rate(day28) [drug = {data_drug_name["drug_name"][l]}]', fontsize=30)
+        plt.xlabel('Correlation coefficients between ECv and TGR(day28)', fontsize=25)
+        plt.ylabel('Frequency', fontsize=25)
         sns.distplot(list_corr[l], color=colorlist[l], kde=False)
         # save
-        savepath = f'./result/fig/IDEA1_2/1_corrplot/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
+        savepath = f'result/fig/IDEA1_2/1_distribution_corr_ecv_TGR/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
-    return list_corr
+
+    return
 
 
-def scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_tgr_d28):
-    for d in range(len(data_drug_name['drug_name'])):
-        # information
-        ecv_index = list(list_corr[d]).index(max(list_corr[d]))
+# Plot a scatter plot of pairs with the largest correlation coefficient
+def plot_scatter_maxcorr(data_ecv, data_drug_name, list_corr):
+    # 各薬剤ごとに
+    for d in range(len(data_drug_name)):
+        # 相関係数最大のecvのindexと値, parent, childの名前を取得=========
+        maxcorr_index = list(list_corr[d]).index(max(list_corr[d]))  # indexを取得
         drug = data_drug_name["drug_name"][d]
-        parent = data_ecv.iloc[ecv_index, :2][0]
-        child = data_ecv.iloc[ecv_index, :2][1]
+        parent = data_ecv.iloc[maxcorr_index, :2][0]  # parentの名前を取得
+        child = data_ecv.iloc[maxcorr_index, :2][1]  # childの名前を取得
+        tgr_value = np.array(list_tgr_d28[d], dtype='float64').reshape(
+            10,)  # CTOS1~10のtgrの値
+        ecv_value = np.array(
+            data_ecv.iloc[maxcorr_index, 2:], dtype='float64')  # CTOS1~10のecvの値
         print(
-            f'drug = {drug}, index = {ecv_index}, parent = {parent}, child = {child}')
+            f'drug = {drug}, index = {maxcorr_index}, parent = {parent}, child = {child}')
 
-        # array tumor growth rate & ecv
-        array_tgr = np.array(list_tgr_d28[d], dtype='float64').reshape(10,)
-        array_ecv = np.array(data_ecv.iloc[ecv_index, 2:], dtype='float64')
-        # corr
-        corr = np.corrcoef(array_tgr, array_ecv)[0, 1]
-
-        # scatter plot
+        # scatter plot==================
         plt.figure(figsize=(30, 10))
         plt.rcParams["font.family"] = 'sans-serif'
         plt.rcParams['font.size'] = 25
@@ -125,57 +157,46 @@ def scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_tgr_d28):
         #plt.ylim([0,16])
         plt.xlabel('tumor growth rate [day28]', fontsize=25)
         plt.ylabel('ECv', fontsize=25)
-        plt.text(14.2, min(array_ecv),
+        plt.text(14.2, min(ecv_value),
                  f"corr : {round(max(list_corr[d]), 2)}", size=30)
 
-        data_name = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        # (Cetuximab, Oxaliplatin, Irinotecan) = (green, blue, red)
-        colorlist = ["#999999", "#9BC99B", "#3FBF3F",
-                     "#9BA7C9", "#3F5FBF", "#D88C8C", "#BF3F3F"]
+        CTOS_LINE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-        for (x, y, k) in zip(array_tgr, array_ecv, data_name):
+        # (Cetuximab, Oxaliplatin, Irinotecan) = (green, blue, red)
+        colorlist = ["#999999",  # gray
+                     "#9BC99B", "#3FBF3F",  # green
+                     "#9BA7C9", "#3F5FBF",  # blue
+                     "#D88C8C", "#BF3F3F"  # red
+                     ]
+
+        for (x, y, k) in zip(tgr_value, ecv_value, CTOS_LINE):
             plt.scatter(x, y, color=colorlist[d], s=200)
             plt.annotate(k, xy=(x+0.1, y), size=25)
 
-        # save
-        savepath = f'./result/fig/IDEA1_2/2_scatterplot_maxcorrpair/fig_scatterplot_{data_drug_name["drug_name"][d]}.png'
+        # save figure===============
+        savepath = f'result/fig/IDEA1_2/2_scatterplot_corrmax/fig_scatterplot_{data_drug_name["drug_name"][d]}.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
+
     return
 
-# calculate range between max-min value of ecv
-def cal_ecv_maxmin(data_ecv):
-    list_ecv_maxmin = []
-    for i in range(len(data_ecv)):
-        ecv_max = data_ecv.iloc[i, 2:].max()
-        ecv_min = data_ecv.iloc[i, 2:].min()
-        ecv_maxmin = abs(ecv_max - ecv_min)
-        list_ecv_maxmin.append(ecv_maxmin)
+
+# plot distribution of range [ECv & TGR]
+def plot_distribution_ecv_range(list_ecv_range):
     # figure
     plt.figure(figsize=(30, 15))
     plt.rcParams["font.family"] = 'sans-serif'
     plt.rcParams['font.size'] = 25
     plt.title(f'Distribution of range between max-min value of ECv', fontsize=30)
     plt.xlabel('range between max-min value of ECv', fontsize=25)
-    plt.ylabel('Count', fontsize=25)
-    sns.distplot(list_ecv_maxmin, color="#9BC99B", kde=False)
+    plt.ylabel('Frequency', fontsize=25)
+    sns.distplot(list_ecv_range, color="#9BC99B", kde=False)
     # save
-    savepath = f'./result/fig/IDEA1_2/3_scatterplot_range_ecv/fig_scatterplot_range_ecv.png'
+    savepath = f'result/fig/IDEA1_2/3_distribution_range_ecv_TGR/fig_scatterplot_range_ecv.png'
     plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
     print(f'[SAVE]: {savepath}')
-    return list_ecv_maxmin
 
-# make matrix [parent, child, corr, range_ecv]
-def corr_matrix(list_corr, list_ecv_maxmin, data_ecv, data_drug_name):
-    for i in range(len(list_corr)):
-        data = data_ecv.iloc[:, :2]
-        data['CorrelationCoefficients'] = list_corr[i]
-        data['range_ecv'] = list_ecv_maxmin
-        # save
-        savepath = f'./result/txt/IDEA1_2/1_CorrelationCoefficients/CorrelationCoefficients_{data_drug_name["drug_name"][i]}.txt'
-        data.to_csv(savepath, sep='\t', index=False)
     return
-
 
 
 if __name__ == '__main__':
@@ -183,11 +204,15 @@ if __name__ == '__main__':
     data_ecv_, list_tgr_, data_drug_name = data_load()
     # reshape the data
     data_ecv, list_tgr_d28 = reshape(data_ecv_, list_tgr_)
-    # corr plot
-    list_corr = corrplot(data_ecv, data_drug_name, list_tgr_d28)
-    # scatter plot
-    scatterplot_maxcorrpair(data_drug_name, list_corr, data_ecv, list_tgr_d28)
-    # calculate range ecv
-    list_ecv_maxmin = cal_ecv_maxmin(data_ecv)
-    # corr matrix
-    corr_matrix(list_corr, list_ecv_maxmin, data_ecv, data_drug_name)
+
+    # calculate correlation between [ECv & TGR]
+    list_corr = calculate_corr_ecv_tgr(data_ecv, data_drug_name, list_tgr_d28)
+    # calculate range of ECv max-min value and save matrix
+    list_ecv_range = cal_ecv_range(data_ecv, data_drug_name, list_corr)
+
+    # plot distribution of correlation values[ECv & TGR]
+    plot_distribution_corr_ecv_tgr(list_corr, data_drug_name)
+    # plot a scatter plot of pairs with the largest correlation coefficient
+    plot_scatter_maxcorr(data_ecv, data_drug_name, list_corr)
+    # plot distribution of range [ECv & TGR]
+    plot_distribution_ecv_range(list_ecv_range)
