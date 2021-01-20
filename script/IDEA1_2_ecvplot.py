@@ -1,6 +1,6 @@
 # Author: S.Inoue
 # Date: 12/21/2020
-# Updated: 12/22/2020
+# Updated: 01/20/2021
 # Project: CTOS folfoliox project
 # Script: To perform basic analyses
 
