@@ -90,7 +90,7 @@ def learning(df_reshaped):
         print(f'method : {method[m]}')
         for i in range(len(df_reshaped)):
             # drug list
-            drug_name = ["Cetuximab_60mg", "Irinotecan_60mg", "Oxaliplatin_10mg"]
+            drug_name = ["Cetuximab_60mg", "Irinotecan_10mg", "Oxaliplatin_10mg"]
             print(f'drug : {drug_name[i]}')
 
             data = np.array(df_reshaped[i].drop(columns='label'))  # numpy行列に変換
