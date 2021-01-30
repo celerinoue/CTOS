@@ -21,7 +21,7 @@ def pickup_gene_list():
         print(f'[LOAD] {os.path.basename(i)}')
         df = pd.read_table(i, sep='\t', header=0)
         # list of gene_name of ECv pair
-        df['Parent_Child'] = df['Parent'] + '_' + df['Child']  # pair list
+        df['Parent_Child'] = df['Parent'] + '::' + df['Child']  # pair list
         genelist_ecv_pair_th06.append(list(df['Parent_Child']))
         # list of gene_name of ECv union
         list_ecv = list(set(df['Parent']) | set(df['Child']))
@@ -61,7 +61,7 @@ def load_CTOS_data():
     df_ecv_ = pd.read_table(df_ecv_path, sep='\t', header=0)
     print(f'[LOAD] {df_ecv_path}, input matrix: {df_ecv_.shape}')
     # reshape data_ecv
-    df_ecv_['Parent_Child'] = df_ecv_['Parent'] + '_' + df_ecv_['Child']
+    df_ecv_['Parent_Child'] = df_ecv_['Parent'] + '::' + df_ecv_['Child']
     df_ecv = df_ecv_.loc[:, ['Parent_Child',
                              'ECv:C97-float:8',  # CTOS_line = 1
                              'ECv:C166-float:21',  # CTOS_line = 2
