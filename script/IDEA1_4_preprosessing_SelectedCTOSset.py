@@ -21,8 +21,8 @@ def pickup_gene_list():
         print(f'[LOAD] {os.path.basename(i)}')
         df = pd.read_table(i, sep='\t', header=0)
         # list of gene_name of ECv pair
-        df['Gene_Pair_Name'] = df['Parent'] + ' + ' + df['Child']  # pair list
-        genelist_ecv_pair_th06.append(list(df['Gene_Pair_Name']))
+        df['Parent_Child'] = df['Parent'] + '_' + df['Child']  # pair list
+        genelist_ecv_pair_th06.append(list(df['Parent_Child']))
         # list of gene_name of ECv union
         list_ecv = list(set(df['Parent']) | set(df['Child']))
         genelist_ecv_th06.append(list(list_ecv))
@@ -61,8 +61,8 @@ def load_CTOS_data():
     df_ecv_ = pd.read_table(df_ecv_path, sep='\t', header=0)
     print(f'[LOAD] {df_ecv_path}, input matrix: {df_ecv_.shape}')
     # reshape data_ecv
-    df_ecv_['Gene_Pair_Name'] = df_ecv_['Parent'] + ' + ' + df_ecv_['Child']
-    df_ecv = df_ecv_.loc[:, ['Gene_Pair_Name',
+    df_ecv_['Parent_Child'] = df_ecv_['Parent'] + '_' + df_ecv_['Child']
+    df_ecv = df_ecv_.loc[:, ['Parent_Child',
                              'ECv:C97-float:8',  # CTOS_line = 1
                              'ECv:C166-float:21',  # CTOS_line = 2
                              'ECv:C86-float:17',  # CTOS_line = 3
@@ -74,8 +74,6 @@ def load_CTOS_data():
                              'ECv:C75-float:7',  # CTOS_line = 9
                              'ECv:C132-float:19'  # CTOS_line = 10
                              ]]
-    df_ecv.columns = ['Gene_Pair_Name', 'CTOS #1', 'CTOS #2', 'CTOS #3', 'CTOS #4',
-                      'CTOS #5', 'CTOS #6', 'CTOS #7', 'CTOS #8', 'CTOS #9', 'CTOS #10']  # rename column names
     print(f'[INFO] reshaped :{df_ecv_path}')
 
     # [LOAD] original gene expression data ============
@@ -94,8 +92,6 @@ def load_CTOS_data():
                              'C75-float',  # CTOS_line = 9
                              'C132-float'  # CTOS_line = 10
                              ]]
-    df_exp.columns = ['GeneName', 'CTOS #1', 'CTOS #2', 'CTOS #3', 'CTOS #4', 'CTOS #5',
-                      'CTOS #6', 'CTOS #7', 'CTOS #8', 'CTOS #9', 'CTOS #10']  # rename column names
     print(f'[INFO] reshaped :{df_exp_path}')
 
     return df_ecv, df_exp
@@ -117,11 +113,13 @@ def save_matrix(df_ecv, df_exp, gene_list_all):
         label = [label_cxm60, label_irn10, label_oxa10]  # to list
         # extract CTOS data
         if r == 0:
-            selected_matrix = df_ecv[df_ecv['Gene_Pair_Name'].isin(gene_list_all.iloc[0, i])].drop(columns=['Gene_Pair_Name']).T
-            selected_matrix["label"] = label[i]  # set ylabel
+            selected_matrix_ = df_ecv[df_ecv['Parent_Child'].isin(gene_list_all.iloc[0, i])].set_index('Parent_Child').T
+            selected_matrix_["label"] = label[i]  # set ylabel
+            selected_matrix = selected_matrix_.reset_index()
         else:
-            selected_matrix = df_exp[df_exp['GeneName'].isin(gene_list_all.iloc[r, i])].drop(columns=['GeneName']).T
-            selected_matrix["label"] = label[i]  # set ylabel
+            selected_matrix_ = df_exp[df_exp['GeneName'].isin(gene_list_all.iloc[r, i])].set_index('GeneName').T
+            selected_matrix_["label"] = label[i]  # set ylabel
+            selected_matrix = selected_matrix_.reset_index()
         # save matrix
         savepath = f'result/txt/IDEA1_4/SelectedCTOSset/SelectedCTOSset_{gene_list_all.index[r]}_{gene_list_all.columns[i]}.txt'
         selected_matrix.to_csv(savepath, sep='\t', index=False)
