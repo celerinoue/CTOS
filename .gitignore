@@ -9,8 +9,11 @@ result/
 
 *.ipynb
 
+slide/
 
 
+
+.DS_Store
 
 # C extensions
 *.so
