@@ -36,6 +36,8 @@ def data_load():
     return df_edge_cxm60, df_edge_irn10, df_edge_oxa10, data_ecv_
 
 # reshape
+
+
 def reshape(data_ecv_):
     # reshape data_ecv
     data_ecv = data_ecv_.loc[:, ['Parent',
@@ -90,7 +92,8 @@ def learning(df_reshaped):
         print(f'method : {method[m]}')
         for i in range(len(df_reshaped)):
             # drug list
-            drug_name = ["Cetuximab_60mg", "Irinotecan_10mg", "Oxaliplatin_10mg"]
+            drug_name = ["Cetuximab_60mg",
+                         "Irinotecan_10mg", "Oxaliplatin_10mg"]
             print(f'drug : {drug_name[i]}')
 
             data = np.array(df_reshaped[i].drop(columns='label'))  # numpy行列に変換
@@ -131,6 +134,7 @@ if __name__ == '__main__':
     # reshape the data
     data_ecv = reshape(data_ecv_)
     # make input data
-    df_reshaped = preprocessing(data_ecv, df_edge_cxm60, df_edge_irn10, df_edge_oxa10)
+    df_reshaped = preprocessing(
+        data_ecv, df_edge_cxm60, df_edge_irn10, df_edge_oxa10)
     # learning
     learning(df_reshaped)
