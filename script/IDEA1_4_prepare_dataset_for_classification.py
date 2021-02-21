@@ -121,7 +121,7 @@ def save_matrix(df_ecv, df_exp, gene_list_all):
             selected_matrix_["label"] = label[i]  # set ylabel
             selected_matrix = selected_matrix_.reset_index()
         # save matrix
-        savepath = f'result/txt/IDEA1_4/SelectedCTOSset/SelectedCTOSset_{gene_list_all.index[r]}_{gene_list_all.columns[i]}.txt'
+        savepath = f'result/txt/IDEA1_4/ClassificationDataSet/ClassificationDataSet_{gene_list_all.index[r]}_{gene_list_all.columns[i]}.txt'
         selected_matrix.to_csv(savepath, sep='\t', index=False)
         print(f'[SAVE] {savepath}')
     return

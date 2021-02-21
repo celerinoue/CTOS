@@ -3,6 +3,8 @@
 # Updated: 02/01/2021
 # Project: CTOS folfoliox project
 
+
+#%%
 # import module
 import numpy as np
 import pandas as pd
@@ -24,7 +26,7 @@ def data_load():
         df_all.append(df)
     return df_all
 
-
+# %%
 def learning(df_all):
     # #############################################################################
     # name list
@@ -32,8 +34,8 @@ def learning(df_all):
     edge_name = ["CorrCoef0.6_rangeECv1.0", "CorrCoef0.6_rangeECv1.0_forGeneExp",
                  "CorrCoef0.7_rangeGeneExp1.0", "CorrCoef0.8_rangeGeneExp1.0"]
     drug_name = ["Cetuximab_60mg", "Irinotecan_10mg", "Oxaliplatin_10mg"]
-    for e, d in itertools.product(edge_name, drug_name):
-        name.append([e, d])
+    for edge, drug in itertools.product(edge_name, drug_name):
+        name.append([edge, drug])
 
 
     for i in range(len(df_all)):
@@ -45,7 +47,7 @@ def learning(df_all):
         # Data IO and generation
         X = np.array(df_all[i].drop(columns='label'))  # Explanatory variables
         y = np.array(df_all[i]["label"])  # Dependent variable
-
+        print(f'[INFO] data shape: X {X.shape}, y {y.shape}')
         # #############################################################################
         # Classification and ROC analysis
 
@@ -54,49 +56,56 @@ def learning(df_all):
                                          tol=1.0e-4)
         cv = LeaveOneOut()
 
-        tprs = []
-        aucs = []
-        mean_fpr = np.linspace(0, 1, 100)
+        all_y = []
+        all_probs = []
+        all_preds = []
 
-        # Run classifier with LeaveOneOut and plot ROC curves
-        fig = plt.figure(figsize=[12, 12])
-        ax = fig.add_subplot(111, aspect='equal')
-        print(name[i])
-
-        for train, test in cv.split(X):
-            #print("TRAIN:", train, "TEST:", test)
+        for train, test in cv.split(X, y):
             clf.fit(X[train], y[train])
-            pred = clf.predict(X)  # predict values
-            true = y  # true values
+            all_y.append(y[test]) # true label
+            all_probs.append(clf.predict_proba(X[test])[:, 1]) # probability
+            all_preds.append(clf.predict(X[test]))  # predict value
 
-            # count correct_num
-            correct_ = []
-            for n in range(len(pred)):
-                correct_.append(pred[n] == y[n])
+        all_y = np.ravel(all_y)
+        all_probs = np.ravel(all_probs)
+        all_preds = np.ravel(all_preds)
+
+        # count correct_num
+        correct_ = []
+        for n in range(len(all_y)):
+            correct_.append(all_preds[n] == all_y[n])
             correct_rate = correct_.count(True) / 10
-            #print(f'TRUE: {true}, PRED: {pred}, correct rate: {correct_rate}')
 
-            fpr, tpr, t = roc_curve(true, pred)
-            tprs.append(np.interp(mean_fpr, fpr, tpr))
-            roc_auc = auc(fpr, tpr)
-            aucs.append(roc_auc)
-            plt.plot(fpr, tpr, lw=2, alpha=0.2,
-                     label='ROC Leave-One-Out %d (AUC = %0.2f)' % (i, roc_auc))
+        # plot
+        fpr, tpr, thresholds = roc_curve(all_y, all_probs)
+        roc_auc = auc(fpr, tpr)
 
-        plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='black')
-        mean_tpr = np.mean(tprs, axis=0)
-        mean_auc = auc(mean_fpr, mean_tpr)
-        plt.plot(mean_fpr, mean_tpr, color='blue',
-                label=r'Mean ROC (AUC = %0.2f )' % (mean_auc), lw=2, alpha=1)
+        print(f"TRUE: {all_y}, PRED: {all_preds}, prob: {all_probs}, correct rate: {correct_rate}, AUC:{roc_auc}", fpr, tpr)
+
+
+        plt.figure(1, figsize=(12, 6))
+        plt.plot(fpr, tpr, lw=2, alpha=0.5,
+                label='LOOCV ROC (AUC = %0.2f)' % (roc_auc))
+        plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
+                color='k', label='Chance level', alpha=.2)
+
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title(f'CTOS classification ROC Curves [method:Linear Discriminant Analysis][Edge:{name[i][0]}][Drug: {name[i][1]}]')
+        plt.title(
+            f'CTOS classification ROC Curves [method:Linear Discriminant Analysis][Edge:{name[i][0]}][Drug: {name[i][1]}]')
         plt.legend(loc="lower right")
+        plt.grid()
 
-        savepath = f'result/fig/IDEA1_4/1_classification_ROC_curves/fig_ROC_{name[i][0]}_{name[i][1]}.png'
-        plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
-        print(f'[SAVE]: {savepath}')
+        #savepath = f'result/fig/IDEA1_4/1_classification_ROC_curves/fig_ROC_{name[i][0]}_{name[i][1]}.png'
+        #plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
+        #print(f'[SAVE]: {savepath}')
+
+
     return
+
+learning(df_all)
+
+
 
 
 if __name__ == '__main__':
