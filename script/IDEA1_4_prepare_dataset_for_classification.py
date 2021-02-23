@@ -45,7 +45,7 @@ def pickup_gene_list():
                                     genelist_exp_th07,
                                     genelist_exp_th08],
                                 index=["CorrCoef0.6_rangeECv1.0",
-                                        "CorrCoef0.6_rangeECv1.0_forGeneExp",
+                                        "CorrCoef0.6_rangeECv1.0__forGeneExp",
                                         "CorrCoef0.7_rangeGeneExp1.0",
                                         "CorrCoef0.8_rangeGeneExp1.0"],
                                 columns=["Cetuximab_60mg",

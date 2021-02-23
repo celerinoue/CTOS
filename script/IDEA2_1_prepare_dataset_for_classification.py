@@ -4,7 +4,7 @@
 # Project: CTOS folfoli folfox
 # Script: Exract connected component from the network file generated through INGOR
 
-
+#%%
 # import module
 import numpy as np
 import pandas as pd
@@ -112,7 +112,7 @@ def save_matrix(df_ecv, df_GeneExp, list_gene_all):
             labeled_GeneExp = labeled_GeneExp_
             #labeled_GeneExp = labeled_GeneExp_.reset_index()
             savepath = f'result/txt/IDEA2_1/ClassificationDataSet/GeneExp/ClassificationDataSet_GeneExp_{drug[r]}_rank_{i+1}.txt'
-            labeled_GeneExp.to_csv(savepath, sep='\t', index=False)
+            labeled_GeneExp.to_csv(savepath, sep='\t', index=True)
             print(f'[SAVE] {savepath}')
 
             # ecv : Parent_Child
@@ -121,7 +121,7 @@ def save_matrix(df_ecv, df_GeneExp, list_gene_all):
             #labeled_ecv = labeled_ecv_.reset_index()
             labeled_ecv = labeled_ecv_
             savepath = f'result/txt/IDEA2_1/ClassificationDataSet/ECv/ClassificationDataSet_ECv_{drug[r]}_rank_{i+1}.txt'
-            labeled_ecv.to_csv(savepath, sep='\t', index=False)
+            labeled_ecv.to_csv(savepath, sep='\t', index=True)
             print(f'[SAVE] {savepath}')
     return
 
@@ -129,6 +129,8 @@ if __name__ == '__main__':
     # load selected gene data
     list_gene_all = pickup_gene_list()
     # load original CTOS data
-    df_ecv, df_exp = load_CTOS_data()
+    df_ecv, df_GeneExp = load_CTOS_data()
     # reshape & save matrix
-    save_matrix(df_ecv, df_exp, list_gene_all)
+    save_matrix(df_ecv, df_GeneExp, list_gene_all)
+
+# %%

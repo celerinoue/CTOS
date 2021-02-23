@@ -30,7 +30,7 @@ def data_load():
         list_df_name.append([os.path.basename(i).split('_')[1], # 'GeneExp' or 'ECv'
                              os.path.basename(i).split('_')[2], # drug
                              os.path.basename(i).split('_')[5].split('.')[0]  # rank
-							 ])
+                             ])
     return df_all, list_df_name
 
 
@@ -89,56 +89,56 @@ def learning(df_all, list_df_name):
 
 
 def plot(all_accuracy, all_auc):
-	# y
-	y = [np.array(all_accuracy[0:14]),  # acc_ecv_cxm
-		np.array(all_accuracy[14:20]),  # acc_ecv_irn
-		np.array(all_accuracy[20:30]),  # acc_ecv_oxa
-		np.array(all_accuracy[30:44]),  # acc_exp_cxm
-		np.array(all_accuracy[44:50]),  # acc_exp_irn
-		np.array(all_accuracy[50:60]),  # acc_exp_oxa
-		np.array(all_auc[0:14]),  # auc_ecv_cxm
-		np.array(all_auc[14:20]),  # auc_ecv_irn
-		np.array(all_auc[20:30]),  # auc_ecv_oxa
-		np.array(all_auc[30:44]),  # auc_exp_cxm
-		np.array(all_auc[44:50]),  # auc_exp_irn
-		np.array(all_auc[50:60])  # auc_exp_oxa
-		]
-	# x
-	x = [list(range(1, 15)), # cxm
-		list(range(1, 7)), # irn
-		list(range(1, 11))  # oxa
-		]
-	# title
-	edge = ['ECv', 'GeneExpression']
-	num_edge = [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1]
-	method = ['Accuracy', 'AUC']
-	num_method = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
-	drug = ['Cetuximab_60mg', 'Irinotecan_10mg', 'Oxaliplatin_10mg']
+    # y
+    y = [np.array(all_accuracy[0:14]),  # acc_ecv_cxm
+        np.array(all_accuracy[14:20]),  # acc_ecv_irn
+        np.array(all_accuracy[20:30]),  # acc_ecv_oxa
+        np.array(all_accuracy[30:44]),  # acc_exp_cxm
+        np.array(all_accuracy[44:50]),  # acc_exp_irn
+        np.array(all_accuracy[50:60]),  # acc_exp_oxa
+        np.array(all_auc[0:14]),  # auc_ecv_cxm
+        np.array(all_auc[14:20]),  # auc_ecv_irn
+        np.array(all_auc[20:30]),  # auc_ecv_oxa
+        np.array(all_auc[30:44]),  # auc_exp_cxm
+        np.array(all_auc[44:50]),  # auc_exp_irn
+        np.array(all_auc[50:60])  # auc_exp_oxa
+        ]
+    # x
+    x = [list(range(1, 15)), # cxm
+        list(range(1, 7)), # irn
+        list(range(1, 11))  # oxa
+        ]
+    # title
+    edge = ['ECv', 'GeneExpression']
+    num_edge = [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1]
+    method = ['Accuracy', 'AUC']
+    num_method = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+    drug = ['Cetuximab_60mg', 'Irinotecan_10mg', 'Oxaliplatin_10mg']
 
-	# color
-	# (Cetuximab, Oxaliplatin, Irinotecan) = (green, blue, red)
-	#colorlist = ["YlGn_r", "YlGnBu_r", "YlOrRd_r"]
-	colorlist = ["Greens", "Blues", "Reds"]
-	num_col = [1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3]
+    # color
+    # (Cetuximab, Oxaliplatin, Irinotecan) = (green, blue, red)
+    #colorlist = ["YlGn_r", "YlGnBu_r", "YlOrRd_r"]
+    colorlist = ["Greens", "Blues", "Reds"]
+    num_col = [1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3]
 
-	for i in range(len(y)):
-		sns.set()
-		sns.set_style("white")
-		sns.set_palette(colorlist[i % 3], num_col[i])
+    for i in range(len(y)):
+        sns.set()
+        sns.set_style("white")
+        sns.set_palette(colorlist[i % 3], num_col[i])
 
-		fig = plt.figure(figsize=(12, 9))
-		ax = fig.add_subplot(1, 1, 1)
-		ax.bar(x[i % 3], y[i], tick_label=x[i % 3])
-		ax.set_ylim([0, 1])
-		ax.set_title(f'{method[num_method[i]]} of binary classification [drug = {drug[i%3]}, edge = {edge[num_edge[i]]}, component length >= 4]')
-		ax.set_xlabel(f'Ranking of Component Size [th = 0.6]')
-		ax.set_ylabel(f'{method[num_method[i]]}')
+        fig = plt.figure(figsize=(12, 9))
+        ax = fig.add_subplot(1, 1, 1)
+        ax.bar(x[i % 3], y[i], tick_label=x[i % 3])
+        ax.set_ylim([0, 1])
+        ax.set_title(f'{method[num_method[i]]} of binary classification [drug = {drug[i%3]}, edge = {edge[num_edge[i]]}, component length >= 4]')
+        ax.set_xlabel(f'Ranking of Component Size [th = 0.6]')
+        ax.set_ylabel(f'{method[num_method[i]]}')
 
-		savepath = f'result/fig/IDEA2_1/Classification_result/fig_Classification_result_{method[num_method[i]]}_{edge[num_edge[i]]}_{drug[i%3]}_.png'
-		plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
-		print(f'[SAVE]: {savepath}')
+        savepath = f'result/fig/IDEA2_1/Classification_result/fig_Classification_result_{method[num_method[i]]}_{edge[num_edge[i]]}_{drug[i%3]}_.png'
+        plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
+        print(f'[SAVE]: {savepath}')
 
-	return
+    return
 
 
 if __name__ == '__main__':
