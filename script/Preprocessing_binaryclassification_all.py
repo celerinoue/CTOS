@@ -45,7 +45,7 @@ def pickup_gene_list():
                                     genelist_exp_th07,
                                     genelist_exp_th08],
                                 index=["CorrCoef0.6_rangeECv1.0",
-                                        "CorrCoef0.6_rangeECv1.0_forGeneExp",
+                                        "CorrCoef0.6_rangeECv1.0__forGeneExp",
                                         "CorrCoef0.7_rangeGeneExp1.0",
                                         "CorrCoef0.8_rangeGeneExp1.0"],
                                 columns=["Cetuximab_60mg",
@@ -57,7 +57,7 @@ def pickup_gene_list():
 
 def load_CTOS_data():
     # [LOAD] original ECv data ===========
-    df_ecv_path = 'data/ECv_network_result_0.15.txt'
+    df_ecv_path = 'BayesianNetworkEstimation/CRC/ECv_network_result_0.15.txt'
     df_ecv_ = pd.read_table(df_ecv_path, sep='\t', header=0)
     print(f'[LOAD] {df_ecv_path}, input matrix: {df_ecv_.shape}')
     # reshape data_ecv
@@ -77,7 +77,7 @@ def load_CTOS_data():
     print(f'[INFO] reshaped :{df_ecv_path}')
 
     # [LOAD] original gene expression data ============
-    df_exp_path = 'data/CRC_dataset.txt'
+    df_exp_path = 'BayesianNetworkEstimation/input_dataset/CRC/CRC_dataset.txt'
     df_exp_ = pd.read_table(df_exp_path, sep='\t', header=0)
     print(f'[LOAD] {df_exp_path}, input matrix: {df_exp_.shape}')
     df_exp = df_exp_.loc[:, ['GeneName',
@@ -121,7 +121,7 @@ def save_matrix(df_ecv, df_exp, gene_list_all):
             selected_matrix_["label"] = label[i]  # set ylabel
             selected_matrix = selected_matrix_.reset_index()
         # save matrix
-        savepath = f'result/txt/IDEA1_4/SelectedCTOSset/SelectedCTOSset_{gene_list_all.index[r]}_{gene_list_all.columns[i]}.txt'
+        savepath = f'data_BinaryClassification/all/ClassificationDataSet_{gene_list_all.index[r]}_{gene_list_all.columns[i]}.txt'
         selected_matrix.to_csv(savepath, sep='\t', index=False)
         print(f'[SAVE] {savepath}')
     return

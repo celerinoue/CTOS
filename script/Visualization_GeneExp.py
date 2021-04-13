@@ -1,6 +1,6 @@
 # Author: S.Inoue
 # Date: 01/21/2021
-# Updated: 01/21/2021
+# Updated: 03/18/2021
 # Project: CTOS folfoliox project
 # Script: To perform basic analyses
 
@@ -15,18 +15,18 @@ import itertools
 # load the data
 def data_load():
     # [LOAD] gene exprssion data
-    file_1 = 'data/CRC_dataset.txt'
+    file_1 = 'BayesianNetworkEstimation/input_dataset/CRC/CRC_dataset.txt'
     data_gene_ = pd.read_table(file_1, sep='\t', header=0)
     print(f'[LOAD]: {file_1}, input matrix: {data_gene_.shape}')
 
     # [LOAD] tumor growth rate data (TGR data, drug1~7)
-    file_2 = 'result/txt/IDEA1_1/tumor_growth_rate.pickle'
+    file_2 = 'data_TGR/TGR.pickle'
     with open(file_2, 'rb') as f:
         list_tgr_ = pickle.load(f)
         print(f'[LOAD]: {file_2}, list length: {len(list_tgr_)}')
 
     # [LOAD] drug name list
-    file_3 = 'result/txt/drug_index.csv'
+    file_3 = 'data_TGR/drug_index.csv'
     data_drug_name = pd.read_csv(file_3, sep=',', header=0, index_col=0)
     print(f'[LOAD]: {file_3}, input matrix: {data_drug_name.shape}')
 
@@ -95,7 +95,7 @@ def cal_gene_range(data_gene, data_drug_name, list_corr):
         matrix['CorrelationCoefficients'] = list_corr.copy()[d]
         matrix['range_gene'] = list_gene_range # 4列目
         # save
-        savepath = f'result/txt/IDEA1_3/1_matrix_corr_and_range_gene/CorrelationCoefficients_{data_drug_name["drug_name"][d]}.txt'
+        savepath = f'resultA_CorrCoef/range_GeneExp/CorrelationCoefficients_{data_drug_name["drug_name"][d]}.txt'
         matrix.to_csv(savepath, sep='\t', index=False)
 
     return list_gene_range
@@ -122,7 +122,7 @@ def plot_distribution_corr_gene_tgr(list_corr, data_drug_name):
         plt.ylabel('Frequency', fontsize=25)
         sns.distplot(list_corr[l], color=colorlist[l], kde=False)
         # save
-        savepath = f'result/fig/IDEA1_3/1_distribution_corr_gene_TGR/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
+        savepath = f'resultA_CorrCoef/range_GeneExp/dist_CorrCoef_GeneExp/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
 
@@ -140,7 +140,7 @@ def plot_distribution_gene_range(list_gene_range):
     plt.ylabel('Frequency', fontsize=25)
     sns.distplot(list_gene_range, color="#9BC99B", kde=False)
     # save
-    savepath = f'result/fig/IDEA1_3/3_distribution_range_gene_TGR/fig_scatterplot_range_gene.png'
+    savepath = f'resultA_CorrCoef/range_GeneExp/dist_CorrCoef_GeneExp/fig_distribution_range_gene.png'
     plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
     print(f'[SAVE]: {savepath}')
 
