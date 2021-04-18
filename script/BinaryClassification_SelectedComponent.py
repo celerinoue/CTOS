@@ -4,7 +4,7 @@
 # Project: CTOS folfoli folfox
 # Script: Exract connected component from the network file generated through INGOR
 
-
+#%%
 # import module
 import numpy as np
 import pandas as pd
@@ -18,12 +18,11 @@ from sklearn.model_selection import LeaveOneOut
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import roc_curve, auc
 
-os.chdir('/Users/celerinoue/0_res/CTOS/')
 
 # load selected CTOS set matrix
 def data_load():
     df_all, list_df_name = [], []
-    for i in natsorted(glob.glob("data_BinaryClassification/SelectedComponent/*.txt")):
+    for i in natsorted(glob.glob("data_BinaryClassification/*/*_rank_*.txt")):
         print(f'[LOAD] {os.path.basename(i)}')
         df = pd.read_table(i, sep='\t', index_col=0)
         df_all.append(df)
@@ -33,7 +32,7 @@ def data_load():
                              ])
     return df_all, list_df_name
 
-
+#%%
 def learning(df_all, list_df_name):
     print('[INFO] binary classification ===============')
 
@@ -87,7 +86,7 @@ def learning(df_all, list_df_name):
 
     return all_accuracy, all_auc
 
-
+#%%
 def plot(all_accuracy, all_auc):
     # y
     y = [np.array(all_accuracy[0:14]),  # acc_ecv_cxm
@@ -141,6 +140,7 @@ def plot(all_accuracy, all_auc):
     return
 
 
+#%%
 if __name__ == '__main__':
     # load data
     df_all, list_df_name = data_load()

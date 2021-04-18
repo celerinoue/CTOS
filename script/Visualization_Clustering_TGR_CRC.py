@@ -58,7 +58,7 @@ def clustering(data):
         dendrogram(z, leaf_font_size=40, color_threshold=7.,
                    labels=labels, above_threshold_color='black')
         # save & show
-        savepath = f'fig/TumorGrowthRate/Clustering_TGR/fig_clustering_{drug_index["drug_name"][i]}.png'
+        savepath = f'resultA_TumorGrowthRate/Clustering_TGR/fig_clustering_{drug_index["drug_name"][i]}.png'
         plt.savefig(savepath, dpi=300, format='png',
                     bbox_inches="tight")  # save
         print(f'[SAVE]: {savepath}')

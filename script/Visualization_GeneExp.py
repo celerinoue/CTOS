@@ -140,7 +140,7 @@ def plot_distribution_gene_range(list_gene_range):
     plt.ylabel('Frequency', fontsize=25)
     sns.distplot(list_gene_range, color="#9BC99B", kde=False)
     # save
-    savepath = f'resultA_CorrCoef/range_GeneExp/dist_CorrCoef_GeneExp/fig_distribution_range_gene.png'
+    savepath = f'resultA_CorrCoef/range_GeneExp/dist_CorrCoef_GeneExp/fig_distribution_range_GeneExp.png'
     plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
     print(f'[SAVE]: {savepath}')
 

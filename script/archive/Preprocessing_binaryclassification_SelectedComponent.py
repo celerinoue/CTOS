@@ -1,6 +1,6 @@
 # Author: yoshi and S.Inoue
 # Date: 2/13/2021
-# Updated: 2/22/2021
+# Updated: 4/18/2021
 # Project: CTOS folfoli folfox
 # Script: Exract connected component from the network file generated through INGOR
 
@@ -14,9 +14,9 @@ import itertools
 import os
 
 
+#%%
 def pickup_gene_list():
-    # ECv Data
-    # SelectedEdges_CorrCoef0.6
+    # [LOAD] Selected ECv Edges (threshold = CorrCoef0.6) ===========
     list_gene_all = []
     for i in sorted(glob.glob("data/SelectedEdges_CorrCoef_rangeECv/*.txt")):
         # load data
@@ -130,4 +130,3 @@ if __name__ == '__main__':
     df_ecv, df_GeneExp = load_CTOS_data()
     # reshape & save matrix
     save_matrix(df_ecv, df_GeneExp, list_gene_all)
-
