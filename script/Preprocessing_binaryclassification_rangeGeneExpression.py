@@ -4,7 +4,7 @@
 # Project: CTOS folfoli folfox
 # Script: Exract connected component from the network file generated through INGOR
 
-
+#%%
 # import module
 import numpy as np
 import pandas as pd
@@ -80,6 +80,7 @@ def makeinputdataset_GeneExp(genelist, data, ylabel):
     return labeled_GeneExp
 
 
+#%%
 if __name__ == '__main__':
 
     # load GeneExp data

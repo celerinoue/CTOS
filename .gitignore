@@ -18,4 +18,5 @@ result*/*
 # other file
 slide/*
 z_other_file/*
+z_archive/*
 .DS_store
