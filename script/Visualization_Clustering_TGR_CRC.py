@@ -1,6 +1,6 @@
 # Author: S.Inoue
 # Date: 12/17/2020
-# Updated: 03/18/2020
+# Updated: 03/18/2021
 # Project: CTOS folfoliox project
 # Script: Labeling Drug Responsiveness of 3 drugs
 # Process: Idea1, Step1

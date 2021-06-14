@@ -3,7 +3,7 @@
 # Updated: 05/28/2021
 # Project: CTOS
 # Scropt: To generate dataset from raw microarray&clinical data for BN input
-# Array dataset: GSE147571 for Survival Analysis
+# Array dataset: RioEJCA2017 (GSE147571) for Survival Analysis
 
 #%%
 import pandas as pd
@@ -71,11 +71,12 @@ def dataload(file_1, file_2):
     data_1["Sample_geo_accession"][9:24] = char_list
     data_1 = data_1.set_index("Sample_geo_accession").T
     pfs_os = data_1[["regimen", "os censored", "os"]]
-    pfs_os["regimen"] = [pfs_os["regimen"][i].split(":")[1] for i in range(len(pfs_os))]
-    pfs_os["os censored"] = [pfs_os["os censored"][i].split(":")[1] for i in range(len(pfs_os))]
+    pfs_os["regimen"] = [pfs_os["regimen"][i].split(":")[1].replace(' ', '') for i in range(len(pfs_os))]
+    pfs_os["os censored"] = [pfs_os["os censored"][i].split(":")[1].replace(' ', '') for i in range(len(pfs_os))]
     #pfs_os["pfs"] = pfs_os["pfs"].astype(float)
     pfs_os["os"] = [pfs_os["os"][i].split(":")[1] for i in range(len(pfs_os))]
     pfs_os["os"] = pfs_os["os"].astype(float)
+    pfs_os = pfs_os.reset_index().rename(columns={1: 'Sample_name'})
 
     return gene_exp, pfs_os
 
@@ -117,23 +118,21 @@ def violinplot(matrix, filename):
 
 if __name__ == '__main__':
     # load data
-    file_1 = 'data/SurvivalAnalysis/GSE72970_family.soft'
-    file_2 = 'data/SurvivalAnalysis/GSE72970_series_matrix.txt'
+    file_1 = 'data/RioEJCA2017/GSE72970_family.soft'
+    file_2 = 'data/RioEJCA2017/GSE72970_series_matrix.txt'
 
     gene_exp, pfs_os = dataload(file_1, file_2)
 
     print('[INFO] feature extraction completed')
 
     # save file
-    savepath1 = 'data_SurvivalAnalysis/FeatureExtractedMatrix_SurvivalAnalysis.txt'
+    savepath1 = 'data_RioEJCA2017/FeatureExtractedMatrix_RioEJCA2017.txt'
     gene_exp.to_csv(savepath1, mode='w', sep="\t")
     print(f"[SAVE] {savepath1}")
 
-    savepath2 = 'data_SurvivalAnalysis/SurvivalAnalysis_pfsos.txt'
-    pfs_os.to_csv(savepath2, mode='w', sep="\t")
+    savepath2 = 'data_RioEJCA2017/pfsos_RioEJCA2017.txt'
+    pfs_os.to_csv(savepath2, mode='w', sep="\t", index=False)
     print(f"[SAVE] {savepath2}")
 
-
-    # plot
 
 # %%
