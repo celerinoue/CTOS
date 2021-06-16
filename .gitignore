@@ -20,3 +20,5 @@ slide/*
 z_other_file/*
 z_archive/*
 .DS_store
+.vscode
+
