@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from pandas import plotting
 
+
 def dataload(filename):
     ## load data ##
     data = pd.read_table(filename, sep='\t', header=0, index_col=0)
@@ -121,7 +122,7 @@ if __name__ == '__main__':
 
     pca(SCNECdata, '../data/SCNEC_pca.png')
     pca(CRCdata, '../data/CRC_pca.png')
-    pca(MIXdata, '../data/MIXdata_pca.png') 
+    pca(MIXdata, '../data/MIXdata_pca.png')
     pca(CRCdata_float, '../data/CRC_float_pca.png')
     pca(CRCdata_non, '../data/CRC_non_pca.png')
 

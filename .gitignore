@@ -1,0 +1,24 @@
+
+
+# data file
+data/*
+BayesianNetworkEstimation/*
+data_*/*
+
+
+# log file
+log/*
+
+
+# result file
+result*/*
+
+
+
+# other file
+slide/*
+z_other_file/*
+z_archive/*
+.DS_store
+.vscode
+
