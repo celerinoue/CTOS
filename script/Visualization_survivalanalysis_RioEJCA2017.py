@@ -1,9 +1,9 @@
 # Author: S.Inoue
-# Date: 6/14/2021
-# Updated: 6/14/2021
+# Date: 6/16/2021
+# Updated: 6/16/2021
 # Project: CTOS folfoliox project
 # dataset: RioEJCA2017
-# Script: clustering for lifelines
+# Script: clustering for SurvivalAnalysis
 
 #%%
 # import module
@@ -22,36 +22,39 @@ def load_data(file):
     print(f'[LOAD] {os.path.basename(file)}')
     print(f'# input matrix: {data.shape}')
     return data
+
 #%%
 def reshape_inputmatrix(data_):
-    data = data_.set_index('name').drop(columns=['Parent', 'Child']).T # (sample * edge)
+    data = data_.set_index('name').drop(
+        columns=['Parent', 'Child']).T  # (sample * edge)
     return data
 
 #%%
 def clustering(data):
     labels = list(input_data.index)
     result = linkage(data.iloc[:, :],
-                    #metric = 'braycurtis',
-                    #metric = 'canberra',
-                    #metric = 'chebyshev',
-                    #metric = 'cityblock',
-                    #metric='correlation',
-                    #metric = 'cosine',
-                    metric = 'euclidean',
-                    #metric = 'hamming',
-                    #metric = 'jaccard',
-                    #method= 'single')
-                    #method='average')
-                    method = 'ward')
-                    #method= 'complete')
-                    #method='weighted')
+                     #metric = 'braycurtis',
+                     #metric = 'canberra',
+                     #metric = 'chebyshev',
+                     #metric = 'cityblock',
+                     #metric='correlation',
+                     #metric = 'cosine',
+                     metric='euclidean',
+                     #metric = 'hamming',
+                     #metric = 'jaccard',
+                     #method= 'single')
+                     #method='average')
+                     method='ward')
+    #method= 'complete')
+    #method='weighted')
     return result, labels
 
 
 #%%
-def plot(result,labels, drug, savepath):
+def plot(result, labels, drug, savepath):
     plt.figure(figsize=(10, 10))
-    dendrogram(result, orientation='right', labels=labels, color_threshold=0.01)
+    dendrogram(result, orientation='right',
+               labels=labels, color_threshold=0.01)
     plt.title(f"Dendrogram of RioEJCA2017 SelectedSamples [drug = {drug}]")
     plt.xlabel("Threshold")
     #plt.grid()
@@ -145,7 +148,8 @@ def get_cluster_by_number(result, number):
 
 
 def clustering2(data, savepath):
-    sns.clustermap(input_data, method='ward', metric='euclidean', row_cluster=True, col_cluster=True)
+    sns.clustermap(input_data, method='ward', metric='euclidean',
+                   row_cluster=True, col_cluster=True)
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
     return
@@ -162,10 +166,8 @@ if __name__ == '__main__':
 
     result, labels = clustering(input_data)
 
-
     savepath = f'resultD_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}.png'
     plot(result, labels, drug, savepath)
-
 
     savepath2 = f'resultD_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}.png'
     draw_threshold_dependency(result, savepath2)
