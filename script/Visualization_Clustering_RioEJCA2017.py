@@ -3,7 +3,7 @@
 # Updated: 6/14/2021
 # Project: CTOS folfoliox project
 # dataset: RioEJCA2017
-# Script: clustering for SurvivalAnalysis
+# Script: clustering for lifelines
 
 #%%
 # import module
@@ -11,6 +11,7 @@ from scipy.cluster.hierarchy import linkage, dendrogram
 import numpy as np
 import pandas as pd
 import os
+import seaborn as sns
 import itertools
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage, set_link_color_palette
@@ -34,13 +35,14 @@ def clustering(data):
                     #metric = 'canberra',
                     #metric = 'chebyshev',
                     #metric = 'cityblock',
-                    metric='correlation',
+                    #metric='correlation',
                     #metric = 'cosine',
-                    #metric = 'euclidean',
+                    metric = 'euclidean',
                     #metric = 'hamming',
                     #metric = 'jaccard',
                     #method= 'single')
-                    method='average')
+                    #method='average')
+                    method = 'ward')
                     #method= 'complete')
                     #method='weighted')
     return result, labels
@@ -92,7 +94,7 @@ def draw_threshold_dependency(result, savepath):
     return
 
 
-def get_cluster_by_number(result, number):
+def get_cluster_by_number(result, number, data, savepath):
     output_clusters = []
     x_result, y_result = result.shape
     n_clusters = x_result + 1
@@ -110,7 +112,6 @@ def get_cluster_by_number(result, number):
         if n_clusters >= number:
             father_of[n1] = cluster_id
             father_of[n2] = cluster_id
-
         cluster_id += 1
 
     cluster_dict = {}
@@ -118,14 +119,12 @@ def get_cluster_by_number(result, number):
         if n not in father_of:
             output_clusters.append([n])
             continue
-
         n2 = n
         m = False
         while n2 in father_of:
             m = father_of[n2]
             #print [n2, m]
             n2 = m
-
         if m not in cluster_dict:
             cluster_dict.update({m: []})
         cluster_dict[m].append(n)
@@ -139,13 +138,25 @@ def get_cluster_by_number(result, number):
             output_cluster_ids[i] = output_cluster_id
         output_cluster_id += 1
 
+    # make matrix
+    data["clusterID"] = output_cluster_ids
+    # savelist
+    data.to_csv(savepath, sep='\t', index=True)
+    print(f'[SAVE]: {savepath}')
+
     return output_cluster_ids
 
 
+def clustering2(data, savepath):
+    sns.clustermap(input_data, method='ward', metric='euclidean', row_cluster=True, col_cluster=True)
+    plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
+    print(f'[SAVE]: {savepath}')
+    return
+
 
 if __name__ == '__main__':
-    path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg.txt'
-    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg.txt'
+    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg.txt'
+    path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg.txt'
     drug = path.split("th06_")[1].split(".")[0]
     print(f'# drug name: {drug}')
     data_ECv = load_data(path)
@@ -163,8 +174,11 @@ if __name__ == '__main__':
     draw_threshold_dependency(result, savepath2)
 
     # get cluster num & matrix
-    clusterIDs = get_cluster_by_number(result, 10)
+    k = 2
+    savepath3 = f'data_RioEJCA2017/ClusterIDs_RioEJCA2017_{drug}_k={k}.txt'
+    clusterIDs = get_cluster_by_number(result, k, input_data, savepath3)
     print(clusterIDs)
 
-
-# %%
+    # heatmap
+    savepath4 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}.png'
+    clustering2(input_data, savepath4)
