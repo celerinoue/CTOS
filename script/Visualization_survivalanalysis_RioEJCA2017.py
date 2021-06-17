@@ -12,9 +12,9 @@ import numpy as np
 import pandas as pd
 import os
 import seaborn as sns
-import itertools
 import matplotlib.pyplot as plt
-from scipy.cluster.hierarchy import dendrogram, linkage, set_link_color_palette
+from lifelines import KaplanMeierFitter
+
 
 #%%
 def load_data(file):
@@ -24,158 +24,78 @@ def load_data(file):
     return data
 
 #%%
-def reshape_inputmatrix(data_):
-    data = data_.set_index('name').drop(
-        columns=['Parent', 'Child']).T  # (sample * edge)
-    return data
-
-#%%
-def clustering(data):
-    labels = list(input_data.index)
-    result = linkage(data.iloc[:, :],
-                     #metric = 'braycurtis',
-                     #metric = 'canberra',
-                     #metric = 'chebyshev',
-                     #metric = 'cityblock',
-                     #metric='correlation',
-                     #metric = 'cosine',
-                     metric='euclidean',
-                     #metric = 'hamming',
-                     #metric = 'jaccard',
-                     #method= 'single')
-                     #method='average')
-                     method='ward')
-    #method= 'complete')
-    #method='weighted')
-    return result, labels
+def reshape_inputmatrix(data_ClusterIDs_, data_survival):
+    data_ClusterIDs_['sampleID'] = [list(data_ClusterIDs_.index)[i].split(':')[0] for i in range(len(data_ClusterIDs_))]
+    data_ClusterIDs = data_ClusterIDs_[["clusterID", "sampleID"]]
+    reshaped_data = pd.merge(data_ClusterIDs, data_survival,left_on='sampleID',right_index=True).drop("regimen", axis=1)
+    return reshaped_data
 
 
 #%%
-def plot(result, labels, drug, savepath):
-    plt.figure(figsize=(10, 10))
-    dendrogram(result, orientation='right',
-               labels=labels, color_threshold=0.01)
-    plt.title(f"Dendrogram of RioEJCA2017 SelectedSamples [drug = {drug}]")
-    plt.xlabel("Threshold")
-    #plt.grid()
-    #plt.show()
+def data_visualization(data_, savepath, drug):
+    data = data_.sort_values(by="os", ascending=False)
+    n_patients = data.shape[0]
+    patients = np.arange(n_patients)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    blue, _, red = sns.color_palette()[:3]
+    ax.hlines(patients[data["os censored"].values == 1], 0, data[data["os censored"].values == 1]["os"], color='red', label='Death')
+    ax.hlines(patients[data["os censored"].values == 0], 0, data[data["os censored"].values == 0]["os"], color='blue', label='Recovered')
+    #ax.scatter(data[data["os censored"].values == 1]['os'], patients[data['os censored'].values == 1], color='k', zorder=10, label='Censored')
+    ax.set_title(f"Days since hospitalization [data = RioEJCA2017, drug = {drug}")
+    ax.set_xlabel('Days since hospitalization')
+    ax.set_ylabel('Case No.')
+    ax.legend(loc='upper right', bbox_to_anchor=(1.25, 1.0))
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
     return
 
-
 #%%
-def draw_threshold_dependency(result, savepath):
-    n_clusters = len(result)
-    n_samples = len(result)
-    df1 = pd.DataFrame(result)
-    x1 = []
-    y1 = []
-    x2 = []
-    y2 = []
-    for i in range(len(result) - 1):
-        n1 = int(result[i][0])
-        n2 = int(result[i][1])
-        val = result[i][2]
-        n_clusters -= 1
-        x1.append(val)
-        x2.append(val)
-        y1.append(n_clusters)
-        y2.append(float(n_samples) / float(n_clusters))
+def survival(data, savepath,drug, k):
+    df_km = data
 
-    plt.subplot(2, 1, 1)
-    plt.plot(x1, y1, 'yo-')
-    plt.title('Threshold dependency of hierarchical clustering')
-    plt.ylabel('Num of clusters')
-    plt.subplot(2, 1, 2)
-    plt.plot(x2, y2, 'ro-')
-    plt.xlabel('Threshold')
-    plt.ylabel('Ave cluster size')
-    #plt.show()
-    plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
-    print(f'[SAVE]: {savepath}')
-    return
+    # Create a kmf object
+    kmf = KaplanMeierFitter()
 
-
-def get_cluster_by_number(result, number):
-    output_clusters = []
-    x_result, y_result = result.shape
-    n_clusters = x_result + 1
-    cluster_id = x_result + 1
-    father_of = {}
-    x1 = []
-    y1 = []
-    x2 = []
-    y2 = []
-    for i in range(len(result) - 1):
-        n1 = int(result[i][0])
-        n2 = int(result[i][1])
-        val = result[i][2]
-        n_clusters -= 1
-        if n_clusters >= number:
-            father_of[n1] = cluster_id
-            father_of[n2] = cluster_id
-
-        cluster_id += 1
-
-    cluster_dict = {}
-    for n in range(x_result + 1):
-        if n not in father_of:
-            output_clusters.append([n])
-            continue
-
-        n2 = n
-        m = False
-        while n2 in father_of:
-            m = father_of[n2]
-            #print [n2, m]
-            n2 = m
-
-        if m not in cluster_dict:
-            cluster_dict.update({m: []})
-        cluster_dict[m].append(n)
-
-    output_clusters += cluster_dict.values()
-
-    output_cluster_id = 0
-    output_cluster_ids = [0] * (x_result + 1)
-    for cluster in sorted(output_clusters):
-        for i in cluster:
-            output_cluster_ids[i] = output_cluster_id
-        output_cluster_id += 1
-
-    return output_cluster_ids
-
-
-def clustering2(data, savepath):
-    sns.clustermap(input_data, method='ward', metric='euclidean',
-                   row_cluster=True, col_cluster=True)
+    # Fit the data into the model
+    #ax = plt.subplot(111)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ## cal by each cluster
+    for l in range(data["clusterID"].nunique()):
+        durations = df_km[df_km["clusterID"] == l]["os"].values
+        event_observed = df_km[df_km["clusterID"] == l]["os censored"].values
+        kmf.fit(durations, event_observed, label=f'cluster {l+1}')
+        kmf.plot(ax=ax)
+        #kmf.plot(at_risk_counts=True)
+    # label
+    ax.set_xlabel("Timeline (days)")
+    ax.set_ylabel("Probability event (Recovered or Death) has not occurred")
+    ax.set_title(f"KaplanMeier: Survival Analysis [data = RioEJCA2017, drug = {drug}, k = {k}")
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
     return
 
 
 if __name__ == '__main__':
-    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg.txt'
-    path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg.txt'
-    drug = path.split("th06_")[1].split(".")[0]
+    # load data
+    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=2.txt'
+    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=2.txt'
+    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=3.txt'
+    path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=3.txt'
+    drug = path.split("2017_")[1].split("_k=")[0]
     print(f'# drug name: {drug}')
-    data_ECv = load_data(path)
+    data_ClusterIDs_ = load_data(path)
 
-    input_data = reshape_inputmatrix(data_ECv)
+    path2 = "data_RioEJCA2017/pfsos_RioEJCA2017.txt"
+    data_survival = load_data(path2)
 
-    result, labels = clustering(input_data)
+    #
+    input_data = reshape_inputmatrix(data_ClusterIDs_, data_survival)
 
-    savepath = f'resultD_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}.png'
-    plot(result, labels, drug, savepath)
+    #
+    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/VisualiveOS_RioEJCA2017_{drug}.png"
+    data_visualization(input_data, savepath, drug)
 
-    savepath2 = f'resultD_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}.png'
-    draw_threshold_dependency(result, savepath2)
-
-    # get cluster num & matrix
-    clusterIDs = get_cluster_by_number(result, 10)
-    print(clusterIDs)
-
-    # heatmap
-    savepath3 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}.png'
-    clustering2(input_data, savepath3)
+    #
+    k = input_data["clusterID"].nunique()
+    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{drug}_k={k}.png"
+    survival(input_data, savepath, drug, k)

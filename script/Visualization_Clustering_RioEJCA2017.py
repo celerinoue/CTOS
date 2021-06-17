@@ -94,7 +94,7 @@ def draw_threshold_dependency(result, savepath):
     return
 
 
-def get_cluster_by_number(result, number):
+def get_cluster_by_number(result, number, data, savepath):
     output_clusters = []
     x_result, y_result = result.shape
     n_clusters = x_result + 1
@@ -112,7 +112,6 @@ def get_cluster_by_number(result, number):
         if n_clusters >= number:
             father_of[n1] = cluster_id
             father_of[n2] = cluster_id
-
         cluster_id += 1
 
     cluster_dict = {}
@@ -120,14 +119,12 @@ def get_cluster_by_number(result, number):
         if n not in father_of:
             output_clusters.append([n])
             continue
-
         n2 = n
         m = False
         while n2 in father_of:
             m = father_of[n2]
             #print [n2, m]
             n2 = m
-
         if m not in cluster_dict:
             cluster_dict.update({m: []})
         cluster_dict[m].append(n)
@@ -140,6 +137,12 @@ def get_cluster_by_number(result, number):
         for i in cluster:
             output_cluster_ids[i] = output_cluster_id
         output_cluster_id += 1
+
+    # make matrix
+    data["clusterID"] = output_cluster_ids
+    # savelist
+    data.to_csv(savepath, sep='\t', index=True)
+    print(f'[SAVE]: {savepath}')
 
     return output_cluster_ids
 
@@ -171,9 +174,11 @@ if __name__ == '__main__':
     draw_threshold_dependency(result, savepath2)
 
     # get cluster num & matrix
-    clusterIDs = get_cluster_by_number(result, 10)
+    k = 2
+    savepath3 = f'data_RioEJCA2017/ClusterIDs_RioEJCA2017_{drug}_k={k}.txt'
+    clusterIDs = get_cluster_by_number(result, k, input_data, savepath3)
     print(clusterIDs)
 
     # heatmap
-    savepath3 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}.png'
-    clustering2(input_data, savepath3)
+    savepath4 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}.png'
+    clustering2(input_data, savepath4)
