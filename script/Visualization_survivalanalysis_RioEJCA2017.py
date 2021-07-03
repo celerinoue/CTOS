@@ -14,6 +14,7 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
 
 
 #%%
@@ -41,9 +42,9 @@ def data_visualization(data_, savepath, drug):
     ax.hlines(patients[data["os censored"].values == 1], 0, data[data["os censored"].values == 1]["os"], color='red', label='Death')
     ax.hlines(patients[data["os censored"].values == 0], 0, data[data["os censored"].values == 0]["os"], color='blue', label='Recovered')
     #ax.scatter(data[data["os censored"].values == 1]['os'], patients[data['os censored'].values == 1], color='k', zorder=10, label='Censored')
-    ax.set_title(f"Days since hospitalization [data = RioEJCA2017, drug = {drug}")
-    ax.set_xlabel('Days since hospitalization')
-    ax.set_ylabel('Case No.')
+    ax.set_title(f"Months since hospitalization [data = RioEJCA2017, drug = {drug}")
+    ax.set_xlabel('Months since hospitalization')
+    ax.set_ylabel('Sample No.')
     ax.legend(loc='upper right', bbox_to_anchor=(1.25, 1.0))
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
@@ -72,15 +73,29 @@ def survival(data, savepath,drug, k):
     ax.set_title(f"KaplanMeier: Survival Analysis [data = RioEJCA2017, drug = {drug}, k = {k}")
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
+
+    # logrank
+    time_1 = data[data["clusterID"] == 0]["os"].values  # k=1, time
+    event_1 = data[data["clusterID"] == 0]["os censored"].values  # k=1, event
+    time_2 = data[data["clusterID"] == 1]["os"].values  # k=2, time
+    event_2 = data[data["clusterID"] == 1]["os censored"].values  # k=2, event
+    #time_3 = data[data["clusterID"] == 2]["os"].values  # k=2, time
+    #event_3 = data[data["clusterID"] == 2]["os censored"].values  # k=2, event
+
+    results = logrank_test(time_1, time_2, event_1, event_2)
+    results.print_summary()
+    print("P-value: ", results.p_value)
+
+    # 図にp-valueを書き込む
     return
 
 
 if __name__ == '__main__':
     # load data
-    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=2.txt'
-    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=2.txt'
-    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=3.txt'
-    path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=3.txt'
+    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=2_v3.txt'
+    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=2_v3.txt'
+    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=3_v3.txt'
+    path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=3_v3.txt'
     drug = path.split("2017_")[1].split("_k=")[0]
     print(f'# drug name: {drug}')
     data_ClusterIDs_ = load_data(path)
@@ -92,10 +107,10 @@ if __name__ == '__main__':
     input_data = reshape_inputmatrix(data_ClusterIDs_, data_survival)
 
     #
-    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/VisualiveOS_RioEJCA2017_{drug}.png"
+    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/VisualiveOS_RioEJCA2017_{drug}_v3.png"
     data_visualization(input_data, savepath, drug)
 
     #
     k = input_data["clusterID"].nunique()
-    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{drug}_k={k}.png"
+    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{drug}_k={k}_v3.png"
     survival(input_data, savepath, drug, k)

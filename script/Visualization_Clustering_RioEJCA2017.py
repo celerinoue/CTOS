@@ -28,8 +28,8 @@ def reshape_inputmatrix(data_):
     return data
 
 #%%
-def clustering(data):
-    labels = list(input_data.index)
+def clustering(data, data_pfsos):
+    labels = list(data.index)
     result = linkage(data.iloc[:, :],
                     #metric = 'braycurtis',
                     #metric = 'canberra',
@@ -147,38 +147,61 @@ def get_cluster_by_number(result, number, data, savepath):
     return output_cluster_ids
 
 
-def clustering2(data, savepath):
-    sns.clustermap(input_data, method='ward', metric='euclidean', row_cluster=True, col_cluster=True)
+def heatmap(data, data_pfsos, labels, savepath, drug):
+    # set res
+    list_res_ = [labels[i].split(":")[0] for i in range(len(labels))]
+    list_res = []
+    for k in range(len(list_res_)):
+        res = data_pfsos[data_pfsos.index ==list_res_[k]]["response status"].to_list()
+        list_res.append(res)
+    list_res = list(itertools.chain.from_iterable(list_res))
+    # set color
+    list_colors = []
+    for i in list_res:
+        l = i.replace("NR", "blue").replace("R", "red")
+        list_colors.append(l)
+
+    # heatmap
+    sns.clustermap(data, method='ward', metric='euclidean', row_cluster=True, col_cluster=True, row_colors=list_colors)
+    plt.title(f"heatmap [drug = {drug}]")
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
     return
 
 
 if __name__ == '__main__':
-    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg.txt'
-    path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg.txt'
-    drug = path.split("th06_")[1].split(".")[0]
+    # pfsos
+    path2 = "data_RioEJCA2017/pfsos_RioEJCA2017.txt"
+    data_pfsos = load_data(path2)
+    # ECv
+    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg_v2.txt'
+    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg_v2.txt'
+    path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg_v3.txt'
+    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg_v3.txt'
+
+    drug = path.split("th06_")[1].split("_v")[0]
     print(f'# drug name: {drug}')
     data_ECv = load_data(path)
 
     input_data = reshape_inputmatrix(data_ECv)
 
-    result, labels = clustering(input_data)
+    result, labels = clustering(input_data, data_pfsos)
 
 
-    savepath = f'resultD_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}.png'
+
+    savepath = f'resultD_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}_v3.png'
     plot(result, labels, drug, savepath)
 
 
-    savepath2 = f'resultD_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}.png'
+    savepath2 = f'resultD_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}_v3.png'
     draw_threshold_dependency(result, savepath2)
 
     # get cluster num & matrix
-    k = 2
-    savepath3 = f'data_RioEJCA2017/ClusterIDs_RioEJCA2017_{drug}_k={k}.txt'
+    k = 3
+    savepath3 = f'data_RioEJCA2017/ClusterIDs_RioEJCA2017_{drug}_k={k}_v3.txt'
     clusterIDs = get_cluster_by_number(result, k, input_data, savepath3)
     print(clusterIDs)
 
     # heatmap
-    savepath4 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}.png'
-    clustering2(input_data, savepath4)
+    savepath4 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}_v3.png'
+    heatmap(input_data, data_pfsos, labels, savepath4, drug)
