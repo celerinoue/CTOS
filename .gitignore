@@ -3,7 +3,7 @@
 # data file
 data/*
 BayesianNetworkEstimation/*
-data_*/*
+RawData/*
 
 
 # log file
@@ -16,9 +16,8 @@ result*/*
 
 
 # other file
-slide/*
+records/*
 z_other_file/*
 z_archive/*
 .DS_store
 .vscode
-
