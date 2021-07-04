@@ -7,6 +7,7 @@
 
 #%%
 # import module
+import glob
 from scipy.cluster.hierarchy import linkage, dendrogram
 import numpy as np
 import pandas as pd
@@ -14,6 +15,7 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
 
 
 #%%
@@ -41,9 +43,9 @@ def data_visualization(data_, savepath, drug):
     ax.hlines(patients[data["os censored"].values == 1], 0, data[data["os censored"].values == 1]["os"], color='red', label='Death')
     ax.hlines(patients[data["os censored"].values == 0], 0, data[data["os censored"].values == 0]["os"], color='blue', label='Recovered')
     #ax.scatter(data[data["os censored"].values == 1]['os'], patients[data['os censored'].values == 1], color='k', zorder=10, label='Censored')
-    ax.set_title(f"Days since hospitalization [data = RioEJCA2017, drug = {drug}")
-    ax.set_xlabel('Days since hospitalization')
-    ax.set_ylabel('Case No.')
+    ax.set_title(f"Months since hospitalization [data = RioEJCA2017, drug = {drug}")
+    ax.set_xlabel('Months since hospitalization')
+    ax.set_ylabel('Sample No.')
     ax.legend(loc='upper right', bbox_to_anchor=(1.25, 1.0))
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
@@ -72,30 +74,45 @@ def survival(data, savepath,drug, k):
     ax.set_title(f"KaplanMeier: Survival Analysis [data = RioEJCA2017, drug = {drug}, k = {k}")
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
+
+    # logrank p-value
+    time_1 = data[data["clusterID"] == 0]["os"].values  # k=1, time
+    event_1 = data[data["clusterID"] == 0]["os censored"].values  # k=1, event
+    time_2 = data[data["clusterID"] == 1]["os"].values  # k=2, time
+    event_2 = data[data["clusterID"] == 1]["os censored"].values  # k=2, event
+    #time_3 = data[data["clusterID"] == 2]["os"].values  # k=2, time
+    #event_3 = data[data["clusterID"] == 2]["os censored"].values  # k=2, event
+
+    results = logrank_test(time_1, time_2, event_1, event_2)
+    results.print_summary()
+    print("P-value: ", results.p_value)
+
+    # 図にp-valueを書き込む
     return
 
 
 if __name__ == '__main__':
     # load data
-    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=2.txt'
-    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=2.txt'
-    #path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Irinotecan_10mg_k=3.txt'
-    path = 'data_RioEJCA2017/ClusterIDs_RioEJCA2017_Oxaliplatin_10mg_k=3.txt'
-    drug = path.split("2017_")[1].split("_k=")[0]
-    print(f'# drug name: {drug}')
-    data_ClusterIDs_ = load_data(path)
 
-    path2 = "data_RioEJCA2017/pfsos_RioEJCA2017.txt"
-    data_survival = load_data(path2)
+    file_list = sorted(glob.glob('data/data_RioEJCA2017/ClusterIDs/*.txt'))
+    for f in file_list:
+        drug = os.path.basename(f).split("2017_")[1].split("_k=")[0]
+        k = os.path.basename(f).split("_")[3].split("=")[1]
+        monomulti_label = os.path.basename(f).split("_")[4].split(".tx")[0]
+        print(f'# drug name: {drug}')
+        data_ClusterIDs_ = load_data(f)
 
-    #
-    input_data = reshape_inputmatrix(data_ClusterIDs_, data_survival)
+        path2 = "data/data_RioEJCA2017/RioEJCA2017_pfsos.txt"
+        data_survival = load_data(path2)
 
-    #
-    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/VisualiveOS_RioEJCA2017_{drug}.png"
-    data_visualization(input_data, savepath, drug)
+        #
+        input_data = reshape_inputmatrix(data_ClusterIDs_, data_survival)
 
-    #
-    k = input_data["clusterID"].nunique()
-    savepath = f"resultD_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{drug}_k={k}.png"
-    survival(input_data, savepath, drug, k)
+        #
+        savepath = f"resultE_RioEJCA2017/OS/VisualiveOS_RioEJCA2017_{drug}_{monomulti_label}.png"
+        data_visualization(input_data, savepath, drug)
+
+        #
+        #k = input_data["clusterID"].nunique()
+        savepath = f"resultE_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{drug}_k={k}_{monomulti_label}.png"
+        survival(input_data, savepath, drug, k)

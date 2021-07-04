@@ -10,11 +10,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-import os
-import sys
 import itertools
 import pickle
 from scipy import stats
+from scipy.cluster.hierarchy import dendrogram, linkage, set_link_color_palette
 
 #%%
 def dataload(filename):
@@ -24,11 +23,9 @@ def dataload(filename):
     return data
 
 ## Data Transforming ##
-def data_transform(data):
+def data_transform(data, savepath):
     ## Modify the original data ##
-    # 元データの投与量に間違いがあったので修正
-    # patient_id 4
-    # 7.Irinotecan_10mg → Irinotecan_3mg, 8.Irinotecan_30mg → Irinotecan_10mg
+    # patient_id : 7.Irinotecan_10mg → Irinotecan_3mg, 8.Irinotecan_30mg → Irinotecan_10mg
     data[data["patient_id"] == 4] = data[data["patient_id"] == 4].replace(
         {7: 6, 8: 7, 'Irinotecan_10mg': 'Irinotecan_3mg', 'Irinotecan_30mg': 'Irinotecan_10mg'})
 
@@ -40,10 +37,9 @@ def data_transform(data):
     data_ratio["00"] = 1  # add day 00 = ratio 1
 
     ## Transform the data format ##
-    ## value列にデータを全部入れる
-    patient_num = data_ratio["patient_id"].drop_duplicates().tolist()  # patient_idの範囲
-    drug_num = data_ratio["drug_id"].drop_duplicates().tolist()  # drug_idの範囲
-    sub_num = data_ratio["subject_id"].drop_duplicates().tolist()  # subject_idの範囲
+    patient_num = data_ratio["patient_id"].drop_duplicates().tolist()  # range patient_id
+    drug_num = data_ratio["drug_id"].drop_duplicates().tolist()  # range drug_id
+    sub_num = data_ratio["subject_id"].drop_duplicates().tolist()  # range subject_id
     l_ = []
     for pat, drg, sub in itertools.product(patient_num, drug_num, sub_num):
         ## define columns from data ##
@@ -57,12 +53,12 @@ def data_transform(data):
         matrix = pd.concat([index, value], axis=1).fillna(method='ffill')
         l_.append(matrix)
     data_val = pd.concat(l_, axis=0).reset_index(drop=True)
-    data_val = data_val.astype({'patient_id': int, 'drug_id': int, 'subject_id': int, 'day': int})  # intに変換
+    data_val = data_val.astype({'patient_id': int, 'drug_id': int, 'subject_id': int, 'day': int})  # convert to int
 
     print('[INFO] TRANSFORMED THE DATA!!')
     print(f'data shape: {data_val.shape}')
 
-    ## save matrix ##
+    ## save pickle##
     l_value = []
     for l_drg, l_pat in itertools.product(drug_num, patient_num):
         l_ = data_val.query(f'(drug_id == {l_drg}) & (patient_id == {l_pat})').groupby(
@@ -75,10 +71,11 @@ def data_transform(data):
     for i in drug_num:
         gr_ = pd.DataFrame(l_value_[i-1], index=patient_num, columns=day_list)
         l_gr.append(gr_)
-    with open('data_TGR/TGR.pickle', mode='wb') as f:
+    with open(f'{savepath}.pickle', mode='wb') as f:
         pickle.dump(l_gr, f)
         f.close
-
+    ## save csv ##
+    data_val.to_csv(f'{savepath}.csv')
     return data_val, patient_num, drug_num
 
 
@@ -100,7 +97,7 @@ def cal_pvalue(data, patient_num, drug_num):
     # calculate p-value
     list_p = []
     for m in range(0, 80):
-        for l in range(1, 7):  # t-testの回数
+        for l in range(1, 7):  # t-test
             p = stats.ttest_rel(data_reshape[m][0], data_reshape[m][l])[1]
             list_p.append(p)
     data_pval_p = pd.DataFrame(np.reshape(
@@ -187,7 +184,7 @@ def fig_effects_per_drug(data, drug_num, estimator, ci):
     else:
         data = data
         drug_name = 'All [1~10]'
-        savepath = f'fig/TumorGrowthRate/plot_{estimator}/fig_{estimator}_ci_{ci}_drug_all.png'
+        savepath = f'resultA_TumorGrowthRate/plot_{estimator}/fig_{estimator}_ci_{ci}_drug_all.png'
 
     sns.set_palette('Set3')
     sns.catplot(x='day', y='TumorGrowthRate', data=data, kind='point', hue='patient_id', estimator=e, ci=ci, height=8, aspect=2)
@@ -200,17 +197,62 @@ def fig_effects_per_drug(data, drug_num, estimator, ci):
     print(f'[SAVE]: {savepath}')
 
 
+def clustering(data):
+    ## make list##
+    drug_list = data["drug_id"].drop_duplicates().tolist()
+    patient_list = data["patient_id"].drop_duplicates().tolist()
+    day_list = data["day"].drop_duplicates().tolist()
+    drug_index = data.drop_duplicates(
+        'drug_id').iloc[:, 1:3].reset_index(drop=True)
+
+    l_value = []
+    for l_drug, l_patient in itertools.product(drug_list, patient_list):
+        l_ = data.query(f'(drug_id == {l_drug}) & (patient_id == {l_patient})').groupby(
+            'day')['value'].median().reset_index(drop=True)
+        l_value.append(l_)
+    l_value_ = list(np.array_split(l_value, 7))
+    l_gr = []
+    for i in drug_list:
+        gr_ = pd.DataFrame(l_value_[i-1], index=patient_list, columns=day_list)
+        l_gr.append(gr_)
+
+    ## plot ##
+    for i in range(len(drug_index)):
+        # read data
+        d = l_gr[i]
+        labels = list(d.index)
+        # clustering (method = ward)
+        z = linkage(d, method='ward')
+        # plot
+        plt.figure(figsize=(30, 15))
+        plt.rcParams["font.family"] = 'sans-serif'
+        plt.rcParams['font.size'] = 30
+        plt.title(
+            f'Clustering Dendrogram : {drug_index["drug_name"][i]}', fontsize=50)
+        plt.xlabel('CTOS_line', fontsize=40)
+        plt.ylabel('Distance', fontsize=40)
+        set_link_color_palette(['red', 'blue'])  # 2 cluster
+        dendrogram(z, leaf_font_size=40, color_threshold=7.,
+                   labels=labels, above_threshold_color='black')
+        # save & show
+        savepath = f'resultA_TumorGrowthRate/Clustering/fig_clustering_{drug_index["drug_name"][i]}.png'
+        plt.savefig(savepath, dpi=300, format='png',
+                    bbox_inches="tight")  # save
+        print(f'[SAVE]: {savepath}')
+    return
+
+
 if __name__ == '__main__':
     ## dataload ##
-    InVivo_data = dataload('data/InVivoData/InVivo_TumorGrowthRate.csv')
+    rawdata = dataload('data/InVivoData/InVivo_TumorGrowthRate.csv')
     ## transforming ##
-    TGR_data, patient_num, drug_num = data_transform(InVivo_data)
-    TGR_data.to_csv('data_TGR/TGR.csv')
-    print(f'[SAVE]: tumor growth data')
+    savepath = "data/data_TumorGrowthRate/data_TumorGrowthRate"
+    TGR_data, patient_num, drug_num = data_transform(rawdata, savepath)
+    print(f'[SAVE]: tumor growth rate data') # save format -> .csv, .pickle
 
     ## calculate p-value ##
     data_pval = cal_pvalue(TGR_data, patient_num, drug_num)
-    data_pval.to_csv('data_TGR/p_value.csv')
+    data_pval.to_csv('data/data_TumorGrowthRate/pvalue_TumorGrowthRate.csv')
     print(f'[SAVE]: p-value data')
 
     ## Figure write [per patient] ##
@@ -225,3 +267,6 @@ if __name__ == '__main__':
     # Figure write [all patient]
     fig_effects_per_patient(TGR_data, all, 'mean', 'sd')  # mean plot
     fig_effects_per_patient(TGR_data, all, 'median', 'sd')  # median plot
+
+    ## clustering ##
+    clustering(TGR_data)

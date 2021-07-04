@@ -172,7 +172,7 @@ if __name__ == '__main__':
         for i in range(len(Genelist_GeneExp_th06)):
             labeled_GeneExp = makeinputdataset_GeneExp(Genelist_GeneExp_th06[i], data_GeneExp, ylabel)
             # save matrix
-            savepath = f'data_2ndFeatureExtractedDataset/ClassificationDataSet_GeneExp_rangeECv_th06/ClassificationDataSet_GeneExp_rangeECv_th06_{drug}_rank_{i+1}.txt'
+            savepath = f'data/data_BinaryClassificationDataSet/ClassificationDataSet_GeneExp_rangeECv_th06/ClassificationDataSet_GeneExp_rangeECv_th06_{drug}_rank_{i+1}.txt'
             labeled_GeneExp.to_csv(savepath, sep='\t', index=True)
             print(f'[SAVE] {savepath}')
 
@@ -180,21 +180,21 @@ if __name__ == '__main__':
         for i in range(len(Genelist_ECv_th06)):
             labeled_ECv = makeinputdataset_ECv(Genelist_ECv_th06[i], data_ECv, ylabel)
             # save matrix
-            savepath = f'data_2ndFeatureExtractedDataset/ClassificationDataSet_ECv_th06/ClassificationDataSet_ECv_th06_{drug}_rank_{i+1}.txt'
+            savepath = f'data/data_BinaryClassificationDataSet/ClassificationDataSet_ECv_th06/ClassificationDataSet_ECv_th06_{drug}_rank_{i+1}.txt'
             labeled_ECv.to_csv(savepath, sep='\t', index=True)
             print(f'[SAVE] {savepath}')
 
         # GeneExp th=0.6 all
         labeled_GeneExp_all = makeinputdataset_GeneExp(Genelist_GeneExp_th06_all, data_GeneExp, ylabel)
         # save matrix
-        savepath = f'data_2ndFeatureExtractedDataset/ClassificationDataSet_GeneExp_rangeECv_th06/ClassificationDataSet_GeneExp_rangeECv_th06_{drug}_allgene.txt'
+        savepath = f'data/data_BinaryClassificationDataSet/ClassificationDataSet_GeneExp_rangeECv_th06/ClassificationDataSet_GeneExp_rangeECv_th06_{drug}_allgene.txt'
         labeled_GeneExp_all.to_csv(savepath, sep='\t', index=True)
         print(f'[SAVE] {savepath}')
 
         # ECv th=0.6 all
         labeled_ECv_all = makeinputdataset_ECv(Genelist_ECv_th06_all, data_ECv, ylabel)
         # save matrix
-        savepath = f'data_2ndFeatureExtractedDataset/ClassificationDataSet_ECv_th06/ClassificationDataSet_ECv_th06_{drug}_allgene.txt'
+        savepath = f'data/data_BinaryClassificationDataSet/ClassificationDataSet_ECv_th06/ClassificationDataSet_ECv_th06_{drug}_allgene.txt'
         labeled_ECv_all.to_csv(savepath, sep='\t', index=True)
         print(f'[SAVE] {savepath}')
 

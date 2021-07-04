@@ -1,6 +1,6 @@
 # Author: yoshi
 # Date: 11/10/2020
-# Updated: 
+# Updated:
 # Project: CTOS SCNEC
 # Script: To extract core subnetwork for cerv54
 
@@ -31,47 +31,47 @@ def main():
     vs61_list=[]
 
     for k,l in zip(vs5['Parent'],vs5['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs5_list.append(pair)
 
     for k,l in zip(vs8['Parent'],vs8['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs8_list.append(pair)
 
     for k,l in zip(vs9['Parent'],vs9['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs9_list.append(pair)
 
     for k,l in zip(vs21['Parent'],vs21['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs21_list.append(pair)
 
     for k,l in zip(vs39['Parent'],vs39['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs39_list.append(pair)
-        
+
     for k,l in zip(vs46['Parent'],vs46['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs46_list.append(pair)
 
     for k,l in zip(vs51['Parent'],vs51['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs51_list.append(pair)
 
     for k,l in zip(vs59['Parent'],vs59['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs59_list.append(pair)
 
     for k,l in zip(vs60['Parent'],vs60['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs60_list.append(pair)
 
     for k,l in zip(vs61['Parent'],vs61['Child']):
-        pair=k+'_'+l 
+        pair=k+'_'+l
         vs61_list.append(pair)
 
 
-    shared_edges = (set(vs5_list) & 
+    shared_edges = (set(vs5_list) &
                     set(vs8_list) &
                     set(vs9_list) &
                     set(vs21_list) &

@@ -3,7 +3,7 @@
 # Updated: 03/18/2021
 # Project: CTOS
 # Scropt: To generate dataset from raw microarray data for BN input
-# Array dataset: CRC
+# Array dataset: CTOS CRC
 
 import pandas as pd
 import numpy as np
@@ -69,21 +69,21 @@ def save_file(filename, data):
 
 if __name__ == '__main__':
     ## load CRC data ##
-    file_list = sorted(glob.glob('data/ArrayDataset/CRC/*.txt'))  # set path: CRC
-    ## generate data ##
-    list_extracted_CRCdata = []
+    file_list = sorted(glob.glob('data/ArrayDataset/CRC/*.txt'))
+    ## processing data ##
+    list_extracted_data = []
     for file in file_list:
         path_name = os.path.splitext(os.path.basename(file))[0]
         print(f'# file name: {path_name}')
-        extracted_data = feature_extract(file).rename(path_name)
-        list_extracted_CRCdata.append(extracted_data)
+        f = feature_extract(file).rename(path_name)
+        list_extracted_data.append(f)
     else:
         print('[INFO] feature extraction completed')
 
     ## concat ##
-    # FeatureExtractedMatrix_CRC_raw = concat_outer(list_extracted_CRCdata)  # allow duplication
-    FeatureExtractedMatrix_CRC = concat_inner(list_extracted_CRCdata)  # drop duplication
+    # FeatureExtractedMatrix_raw = concat_outer(list_extracted_data)  # allow gene duplication
+    FeatureExtractedMatrix = concat_inner(list_extracted_data)  # drop gene duplication
 
     ## save ##
-    # save_file('data_CRC/extractedCRC_raw.txt', FeatureExtractedMatrix_CRC_raw)
-    save_file('data_CRC/FeatureExtractedMatrix_CRC.txt', FeatureExtractedMatrix_CRC)
+    # save_file('BayesianNetworkEstimation/input_dataset/CRC/CRC_dataset_raw.txt', FeatureExtractedMatrix_raw)
+    save_file('BayesianNetworkEstimation/input_dataset/CRC/CRC_dataset.txt', FeatureExtractedMatrix)

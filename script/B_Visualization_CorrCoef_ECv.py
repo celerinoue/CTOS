@@ -20,13 +20,13 @@ def data_load():
     print(f'[LOAD]: {file_1}, input matrix: {data_ecv_.shape}')
 
     # [LOAD] tumor growth rate data (TGR data, drug1~7)
-    file_2 = 'data_TGR/TGR.pickle'
+    file_2 = 'data/data_TumorGrowthRate/data_TumorGrowthRate.pickle'
     with open(file_2, 'rb') as f:
         list_tgr_ = pickle.load(f)
         print(f'[LOAD]: {file_2}, list length: {len(list_tgr_)}')
 
     # [LOAD] drug name list
-    file_3 = 'data_TGR/drug_index.csv'
+    file_3 = 'data/data_TumorGrowthRate/drug_index.csv'
     data_drug_name = pd.read_csv(file_3, sep=',', header=0, index_col=0)
     print(f'[LOAD]: {file_3}, input matrix: {data_drug_name.shape}')
 
@@ -97,7 +97,7 @@ def cal_ecv_range(data_ecv, data_drug_name, list_corr):
         matrix['CorrelationCoefficients'] = list_corr[d]
         matrix['range_ecv'] = list_ecv_range  # 4列目
         # save
-        savepath = f'resultA_CorrCoef/range_ECv/CorrelationCoefficients_{data_drug_name["drug_name"][d]}.txt'
+        savepath = f'data/data_CorrCoef/ECv/CorrelationCoefficients_{data_drug_name["drug_name"][d]}.txt'
         matrix.to_csv(savepath, sep='\t', index=False)
 
     return list_ecv_range
@@ -123,7 +123,7 @@ def plot_distribution_corr_ecv_tgr(list_corr, data_drug_name):
         plt.ylabel('Frequency', fontsize=25)
         sns.distplot(list_corr[l], color=colorlist[l], kde=False)
         # save
-        savepath = f'resultA_CorrCoef/range_ECv/dist_CorrCoef_ECv/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
+        savepath = f'resultB_CorrCoef/range_ECv/dist_CorrCoef_ECv/fig_corrplot_{data_drug_name["drug_name"][l]}.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
 
@@ -173,7 +173,7 @@ def plot_scatter_maxcorr(data_ecv, data_drug_name, list_corr):
             plt.annotate(k, xy=(x+0.1, y), size=25)
 
         # save figure===============
-        savepath = f'resultA_CorrCoef/range_ECv/scat_maxCorrCoef_ECv/fig_scatterplot_{data_drug_name["drug_name"][d]}.png'
+        savepath = f'resultB_CorrCoef/range_ECv/scat_maxCorrCoef_ECv/fig_scatterplot_{data_drug_name["drug_name"][d]}.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
 
@@ -191,7 +191,7 @@ def plot_distribution_ecv_range(list_ecv_range):
     plt.ylabel('Frequency', fontsize=25)
     sns.distplot(list_ecv_range, color="#9BC99B", kde=False)
     # save
-    savepath = f'resultA_CorrCoef/range_ECv/dist_CorrCoef_ECv/fig_distribution_range_ecv.png'
+    savepath = f'resultB_CorrCoef/range_ECv/dist_CorrCoef_ECv/fig_distribution_range_ecv.png'
     plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
     print(f'[SAVE]: {savepath}')
     return

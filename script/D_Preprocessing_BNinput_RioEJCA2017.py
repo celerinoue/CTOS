@@ -10,10 +10,9 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from pandas import plotting
 
+
+# %%
 
 #%%
 # data load
@@ -56,13 +55,13 @@ def dataload(file_1, file_2):
     # reshape =============
     # data_2
     # gene_expression matrix (index = GeneName , allow Duplicate)
-    gene_exp_ = pd.merge(data_2, gene_list, left_on='ID_REF', right_on='ID').drop(columns=[
+    gene_exp__ = pd.merge(data_2, gene_list, left_on='ID_REF', right_on='ID').drop(columns=[
         "ID_REF", "ID", "Representative Public ID"]).rename(columns={'Gene Symbol': 'GeneName'})
-    # 重複削除 同遺伝子は平均値で
-    gene_exp = gene_exp_.dropna(how="any").set_index("GeneName").astype(float)
-    gene_exp = gene_exp.groupby(level=0).mean()
+    gene_exp_ = gene_exp__.drop("GeneName", axis=1).astype(float)  # 数値変換
+    gene_exp_["GeneName"] = gene_exp__["GeneName"]
+    gene_exp = gene_exp_.groupby(by="GeneName").mean().drop(index=['']).dropna(how="any")  # 重複削除
     # log2
-    gene_exp = np.log2(gene_exp + 1)[1:]
+    #gene_exp = np.log2(gene_exp + 1)[1:]
 
 
     # data_1
@@ -70,12 +69,14 @@ def dataload(file_1, file_2):
                  "pn", "pt", "regimen", "response category", "response status", "pfs censored", "pfs", "os censored", "os"]
     data_1["Sample_geo_accession"][9:24] = char_list
     data_1 = data_1.set_index("Sample_geo_accession").T
-    pfs_os = data_1[["regimen", "os censored", "os"]]
+    pfs_os = data_1[["regimen", "os censored", "os", "response status"]]
     pfs_os["regimen"] = [pfs_os["regimen"][i].split(":")[1].replace(' ', '') for i in range(len(pfs_os))]
     pfs_os["os censored"] = [pfs_os["os censored"][i].split(":")[1].replace(' ', '') for i in range(len(pfs_os))]
     #pfs_os["pfs"] = pfs_os["pfs"].astype(float)
     pfs_os["os"] = [pfs_os["os"][i].split(":")[1] for i in range(len(pfs_os))]
     pfs_os["os"] = pfs_os["os"].astype(float)
+    # "response status"
+    pfs_os["response status"] = [pfs_os["response status"][i].split(":")[1].replace(' ', '') for i in range(len(pfs_os))]
     pfs_os = pfs_os.reset_index().rename(columns={1: 'Sample_name'})
 
     return gene_exp, pfs_os
@@ -118,19 +119,19 @@ def violinplot(matrix, filename):
 
 if __name__ == '__main__':
     # load data
-    file_1 = 'data/RioEJCA2017/GSE72970_family.soft'
-    file_2 = 'data/RioEJCA2017/GSE72970_series_matrix.txt'
+    file_1 = 'RawData/RioEJCA2017/GSE72970_family.soft'
+    file_2 = 'RawData/RioEJCA2017/GSE72970_series_matrix.txt'
 
     gene_exp, pfs_os = dataload(file_1, file_2)
 
     print('[INFO] feature extraction completed')
 
     # save file
-    savepath1 = 'data_RioEJCA2017/FeatureExtractedMatrix_RioEJCA2017.txt'
+    savepath1 = 'BayesianNetworkEstimation/input_dataset/CRC/RioEJCA2017_dataset.txt'
     gene_exp.to_csv(savepath1, mode='w', sep="\t")
     print(f"[SAVE] {savepath1}")
 
-    savepath2 = 'data_RioEJCA2017/pfsos_RioEJCA2017.txt'
+    savepath2 = 'data/data_RioEJCA2017/RioEJCA2017_pfsos.txt'
     pfs_os.to_csv(savepath2, mode='w', sep="\t", index=False)
     print(f"[SAVE] {savepath2}")
 
