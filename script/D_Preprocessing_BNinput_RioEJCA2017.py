@@ -119,23 +119,21 @@ def violinplot(matrix, filename):
 
 if __name__ == '__main__':
     # load data
-    file_1 = 'data/RioEJCA2017/GSE72970_family.soft'
-    file_2 = 'data/RioEJCA2017/GSE72970_series_matrix.txt'
+    file_1 = 'RawData/RioEJCA2017/GSE72970_family.soft'
+    file_2 = 'RawData/RioEJCA2017/GSE72970_series_matrix.txt'
 
     gene_exp, pfs_os = dataload(file_1, file_2)
 
     print('[INFO] feature extraction completed')
 
     # save file
-    savepath1 = 'data_RioEJCA2017/FeatureExtractedMatrix_RioEJCA2017_v2.txt'
+    savepath1 = 'BayesianNetworkEstimation/input_dataset/CRC/RioEJCA2017_dataset.txt'
     gene_exp.to_csv(savepath1, mode='w', sep="\t")
     print(f"[SAVE] {savepath1}")
 
-    savepath2 = 'data_RioEJCA2017/pfsos_RioEJCA2017.txt'
+    savepath2 = 'data/data_RioEJCA2017/RioEJCA2017_pfsos.txt'
     pfs_os.to_csv(savepath2, mode='w', sep="\t", index=False)
     print(f"[SAVE] {savepath2}")
 
-
-# %%
 
 # %%

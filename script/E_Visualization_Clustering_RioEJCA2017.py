@@ -15,6 +15,7 @@ import seaborn as sns
 import itertools
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram, linkage, set_link_color_palette
+import glob
 
 #%%
 def load_data(file):
@@ -171,37 +172,38 @@ def heatmap(data, data_pfsos, labels, savepath, drug):
 
 if __name__ == '__main__':
     # pfsos
-    path2 = "data_RioEJCA2017/pfsos_RioEJCA2017.txt"
+    path2 = "data/data_RioEJCA2017/RioEJCA2017_pfsos.txt"
     data_pfsos = load_data(path2)
-    # ECv
-    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg_v2.txt'
-    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg_v2.txt'
-    path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Irinotecan_10mg_v3.txt'
-    #path = 'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_Oxaliplatin_10mg_v3.txt'
 
-    drug = path.split("th06_")[1].split("_v")[0]
-    print(f'# drug name: {drug}')
-    data_ECv = load_data(path)
+    file_list = sorted(glob.glob('data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/*.txt'))
+    # ECv data
+    for f in file_list:
+        #path = 'data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/SurvivalAnalysisDataSet_RioEJCA2017_ECv_th06_Irinotecan_10mg_multidose.txt'
 
-    input_data = reshape_inputmatrix(data_ECv)
+        drug = f.split("th06_")[1].split("_v")[0].split("_")[0]
+        monomulti_label = os.path.basename(f).split("th06_")[1].split("10mg_")[1].split(".tx")[0]
+        print(f'# drug name: {drug}')
+        print(f'# mono or multi dose: {monomulti_label}')
+        data_ECv = load_data(f)
 
-    result, labels = clustering(input_data, data_pfsos)
+        input_data = reshape_inputmatrix(data_ECv)
 
-
-
-    savepath = f'resultD_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}_v3.png'
-    plot(result, labels, drug, savepath)
+        result, labels = clustering(input_data, data_pfsos)
 
 
-    savepath2 = f'resultD_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}_v3.png'
-    draw_threshold_dependency(result, savepath2)
+        savepath = f'resultE_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}_{monomulti_label}.png'
+        plot(result, labels, drug, savepath)
 
-    # get cluster num & matrix
-    k = 3
-    savepath3 = f'data_RioEJCA2017/ClusterIDs_RioEJCA2017_{drug}_k={k}_v3.txt'
-    clusterIDs = get_cluster_by_number(result, k, input_data, savepath3)
-    print(clusterIDs)
+        savepath2 = f'resultE_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}_{monomulti_label}.png'
+        draw_threshold_dependency(result, savepath2)
 
-    # heatmap
-    savepath4 = f'resultD_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}_v3.png'
-    heatmap(input_data, data_pfsos, labels, savepath4, drug)
+        # get cluster num & matrix
+        k_list = [2,3]
+        for k in k_list:
+            savepath3 = f'data/data_RioEJCA2017/ClusterIDs/ClusterIDs_RioEJCA2017_{drug}_k={k}_{monomulti_label}.txt'
+            clusterIDs = get_cluster_by_number(result, k, input_data, savepath3)
+            print(clusterIDs)
+
+        # heatmap
+        savepath4 = f'resultE_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}_{monomulti_label}.png'
+        heatmap(input_data, data_pfsos, labels, savepath4, drug)

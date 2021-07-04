@@ -22,7 +22,7 @@ from sklearn.metrics import roc_curve, auc
 # load selected CTOS set matrix
 def data_load():
     df_all, list_df_name = [], []
-    for i in natsorted(glob.glob("data_BinaryClassification/*/*_rank_*.txt")):
+    for i in natsorted(glob.glob("data/data_BinaryClassificationDataSet/*/*_rank_*.txt")):
         print(f'[LOAD] {os.path.basename(i)}')
         df = pd.read_table(i, sep='\t', index_col=0)
         df_all.append(df)
@@ -133,7 +133,7 @@ def plot(all_accuracy, all_auc):
         ax.set_xlabel(f'Ranking of Component Size [th = 0.6]')
         ax.set_ylabel(f'{method[num_method[i]]}')
 
-        savepath = f'resultC_BinaryClassification_SelectedComponent/Classification_result/fig_Classification_result_{method[num_method[i]]}_{edge[num_edge[i]]}_{drug[i%3]}_.png'
+        savepath = f'resultC_BinaryClassification/result_SelectedComponent/fig_Classification_result_{method[num_method[i]]}_{edge[num_edge[i]]}_{drug[i%3]}_.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
 

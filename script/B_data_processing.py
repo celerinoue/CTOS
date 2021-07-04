@@ -79,8 +79,10 @@ def violinplot(matrix, filename):
 
 if __name__ == '__main__':
 
-    SCNECdata = dataload('../data/SCNEC_dataset.txt') #theme color: deeppink
-    CRCdata = dataload('../data/CRC_dataset.txt') #theme color: lime
+    # theme color: deeppink
+    SCNECdata = dataload('../BayesianNetworkEstimation/input_dataset/SCNEC/SCNEC_dataset.txt')
+    # theme color: lime
+    CRCdata = dataload('../BayesianNetworkEstimation/input_dataset/CRC/CRC_dataset.txt')
     MIXdata = pd.concat([SCNECdata, CRCdata], join='inner', axis=1)
     print(f'MIXdata shape: {MIXdata.shape}')
 

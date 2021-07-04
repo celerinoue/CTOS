@@ -20,19 +20,23 @@ def load_data(file):
 
 
 def sample_list(data_pfsos):
-    Irinotecan = ['FOLFIRI', 'FOLFIRI+BEVACIZUMAB', 'FOLFIRINOX','FOLFIRI+ERBITUX', 'FOLFIRINOX+BEVACIZUMAB', 'XELIRI+BEVACIZUMAB']
-    Oxaliplatin = ['FOLFOX', 'FOLFOX+BEVACIZUMAB','FOLFIRINOX', 'FOLFIRINOX+BEVACIZUMAB']
-    Irinotecan2 = ['FOLFIRI']
-    Oxaliplatin2 = ['FOLFOX']
+    # normal
+    Irinotecans = ['FOLFIRI', 'FOLFIRI+BEVACIZUMAB', 'FOLFIRINOX','FOLFIRI+ERBITUX', 'FOLFIRINOX+BEVACIZUMAB', 'XELIRI+BEVACIZUMAB']
+    Oxaliplatins = ['FOLFOX', 'FOLFOX+BEVACIZUMAB','FOLFIRINOX', 'FOLFIRINOX+BEVACIZUMAB']
+    data_Irinotecans = data_pfsos[data_pfsos["regimen"].isin(Irinotecans)]
+    data_Oxaliplatins = data_pfsos[data_pfsos["regimen"].isin(Oxaliplatins)]
+    samplelist_Irinotecan_multi = list(data_Irinotecans['Sample_name'])
+    samplelist_Oxaliplatin_multi = list(data_Oxaliplatins['Sample_name'])
+
+    # only FOLFIRI/FOLFOX
+    Irinotecan = ['FOLFIRI']
+    Oxaliplatin = ['FOLFOX']
     data_Irinotecan = data_pfsos[data_pfsos["regimen"].isin(Irinotecan)]
     data_Oxaliplatin = data_pfsos[data_pfsos["regimen"].isin(Oxaliplatin)]
-    data_Irinotecan2 = data_pfsos[data_pfsos["regimen"].isin(Irinotecan2)]
-    data_Oxaliplatin2 = data_pfsos[data_pfsos["regimen"].isin(Oxaliplatin2)]
     samplelist_Irinotecan = list(data_Irinotecan['Sample_name'])
     samplelist_Oxaliplatin = list(data_Oxaliplatin['Sample_name'])
-    samplelist_Irinotecan2 = list(data_Irinotecan2['Sample_name'])
-    samplelist_Oxaliplatin2 = list(data_Oxaliplatin2['Sample_name'])
-    return samplelist_Irinotecan, samplelist_Oxaliplatin, samplelist_Irinotecan2, samplelist_Oxaliplatin2
+
+    return samplelist_Irinotecan_multi, samplelist_Oxaliplatin_multi, samplelist_Irinotecan_mono, samplelist_Oxaliplatin_mono
 
 
 def edge_selection(data_ECv, data_edges, samplelist):
@@ -52,12 +56,13 @@ if __name__ == '__main__':
     data_ECv = load_data(path_ECv)
 
     # make sample list by each drug
-    path_pfsos = 'data_RioEJCA2017/pfsos_RioEJCA2017.txt'
+    path_pfsos = 'data/data_RioEJCA2017/RioEJCA2017_pfsos.txt'
     data_pfsos = load_data(path_pfsos)
-    samplelist_Irinotecan, samplelist_Oxaliplatin, samplelist_Irinotecan2, samplelist_Oxaliplatin2 = sample_list(data_pfsos)
+    samplelist_Irinotecan_multi, samplelist_Oxaliplatin_multi, samplelist_Irinotecan_mono, samplelist_Oxaliplatin_mono = sample_list(data_pfsos)
 
     #================================
     # feature extravcion by each drug
+
     ## Irinotecan
     path_Irinotecan = 'data/SelectedEdges_CorrCoef_rangeECv/SelectedEdges_CorrCoef0.6_rangeECv1.0_Irinotecan_10mg.txt'
     data_edges_Irinotecan = load_data(path_Irinotecan)
@@ -65,14 +70,15 @@ if __name__ == '__main__':
     drug_Irinotecan = path_Irinotecan.split("0_")[1].split(".")[0]
     print(f'# drug : {drug_Irinotecan}')
     # edge selection
-    data_selectedECv_Irinotecan = edge_selection(data_ECv, data_edges_Irinotecan, samplelist_Irinotecan)
-    data_selectedECv_Irinotecan2 = edge_selection(data_ECv, data_edges_Irinotecan, samplelist_Irinotecan2)
+    data_selectedECv_Irinotecan = edge_selection(
+        data_ECv, data_edges_Irinotecan, samplelist_Irinotecan_multi)
+    data_selectedECv_Irinotecan_mono = edge_selection(data_ECv, data_edges_Irinotecan, samplelist_Irinotecan_mono)
     # savedata
-    savepath = f'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_{drug_Irinotecan}_v2.txt'
+    savepath = f'data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/SurvivalAnalysisDataSet_RioEJCA2017_ECv_th06_{drug_Irinotecan}_multidose.txt'
     data_selectedECv_Irinotecan.to_csv(savepath, sep='\t', index=True)
     print(f'[SAVE] {savepath}')
-    savepath2 = f'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_{drug_Irinotecan}_v3.txt'
-    data_selectedECv_Irinotecan2.to_csv(savepath2, sep='\t', index=True)
+    savepath2 = f'data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/SurvivalAnalysisDataSet_RioEJCA2017_ECv_th06_{drug_Irinotecan}_monodose.txt'
+    data_selectedECv_Irinotecan_mono.to_csv(savepath2, sep='\t', index=True)
     print(f'[SAVE] {savepath2}')
 
     #================================
@@ -83,12 +89,12 @@ if __name__ == '__main__':
     drug_Oxaliplatin = path_Oxaliplatin.split("0_")[1].split(".")[0]
     print(f'# drug : {drug_Oxaliplatin}')
     # edge selection
-    data_selectedECv_Oxaliplatin = edge_selection(data_ECv, data_edges_Oxaliplatin, samplelist_Oxaliplatin)
-    data_selectedECv_Oxaliplatin2 = edge_selection(data_ECv, data_edges_Oxaliplatin, samplelist_Oxaliplatin2)
+    data_selectedECv_Oxaliplatin_multi = edge_selection(data_ECv, data_edges_Oxaliplatin, samplelist_Oxaliplatin_multi)
+    data_selectedECv_Oxaliplatin_mono = edge_selection(data_ECv, data_edges_Oxaliplatin, samplelist_Oxaliplatin_mono)
     # savedata
-    savepath = f'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_{drug_Oxaliplatin}_v2.txt'
-    data_selectedECv_Oxaliplatin.to_csv(savepath, sep='\t', index=True)
+    savepath = f'data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/SurvivalAnalysisDataSet_RioEJCA2017_ECv_th06_{drug_Oxaliplatin}_multidose.txt'
+    data_selectedECv_Oxaliplatin_multi.to_csv(savepath, sep='\t', index=True)
     print(f'[SAVE] {savepath}')
-    savepath2 = f'data_2ndFeatureExtractedDataset/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06/2ndFeatureExtractedDataset_RioEJCA2017_ECv_th06_{drug_Oxaliplatin}_v3.txt'
-    data_selectedECv_Oxaliplatin2.to_csv(savepath2, sep='\t', index=True)
+    savepath2 = f'data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/SurvivalAnalysisDataSet_RioEJCA2017_ECv_th06_{drug_Oxaliplatin}_monodose.txt'
+    data_selectedECv_Oxaliplatin_mono.to_csv(savepath2, sep='\t', index=True)
     print(f'[SAVE] {savepath2}')

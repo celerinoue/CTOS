@@ -20,7 +20,7 @@ from sklearn.metrics import roc_curve, auc
 # load selected CTOS set matrix
 def data_load():
     df_all = []
-    for i in sorted(glob.glob("data_BinaryClassification/*/*_allgene.txt")):
+    for i in sorted(glob.glob("data/data_BinaryClassificationDataSet/*/*_allgene.txt")):
         print(f'[LOAD] {os.path.basename(i)}')
         df = pd.read_table(i, sep='\t', index_col=0)
         df_all.append(df)
@@ -118,7 +118,7 @@ def plot(all_accuracy):
         ax.set_xticklabels(drug)
         ax.set_ylabel('Accuracy')
 
-        savepath = f'resultB_BinaryClassification_AllComponent/Classification_result/fig_Classification_result_{node[num_node[i]]}_th{th[i]}_.png'
+        savepath = f'resultC_BinaryClassification/result_AllComponent/fig_Classification_result_{node[num_node[i]]}_th{th[i]}_.png'
         plt.savefig(savepath, dpi=300, format='png', bbox_inches="tight")
         print(f'[SAVE]: {savepath}')
 

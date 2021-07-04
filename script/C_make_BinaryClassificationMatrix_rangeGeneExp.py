@@ -109,7 +109,7 @@ if __name__ == '__main__':
         if '0.7' in f:
             labeled_GeneExp = makeinputdataset_GeneExp(Genelist_GeneExp, data_GeneExp, ylabel)
             # save matrix
-            savepath = f'data_BinaryClassification/ClassificationDataSet_GeneExp_th07/ClassificationDataSet_GeneExp_th07_{drug}_allgene.txt'
+            savepath = f'data/data_BinaryClassification/ClassificationDataSet_GeneExp_th07/ClassificationDataSet_GeneExp_th07_{drug}_allgene.txt'
             labeled_GeneExp.to_csv(savepath, sep='\t', index=True)
             print(f'[SAVE] {savepath}')
 
@@ -117,6 +117,6 @@ if __name__ == '__main__':
         elif '0.8' in f:
             labeled_ECv = makeinputdataset_GeneExp(Genelist_GeneExp, data_GeneExp, ylabel)
             # save matrix
-            savepath = f'data_BinaryClassification/ClassificationDataSet_GeneExp_th08/ClassificationDataSet_GeneExp_th08_{drug}_allgene.txt'
+            savepath = f'data/data_BinaryClassification/ClassificationDataSet_GeneExp_th08/ClassificationDataSet_GeneExp_th08_{drug}_allgene.txt'
             labeled_ECv.to_csv(savepath, sep='\t', index=True)
             print(f'[SAVE] {savepath}')
