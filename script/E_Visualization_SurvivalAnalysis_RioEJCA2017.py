@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import logrank_test
 
-
 #%%
 def load_data(file):
     data = pd.read_table(file, sep='\t', header=0, index_col=0)
@@ -31,7 +30,6 @@ def reshape_inputmatrix(data_ClusterIDs_, data_survival):
     data_ClusterIDs = data_ClusterIDs_[["clusterID", "sampleID"]]
     reshaped_data = pd.merge(data_ClusterIDs, data_survival,left_on='sampleID',right_index=True).drop("regimen", axis=1)
     return reshaped_data
-
 
 #%%
 def data_visualization(data_, savepath, drug):
