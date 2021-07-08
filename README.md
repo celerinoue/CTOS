@@ -139,7 +139,7 @@ script/E_Visualization_SurvivalAnalysis_RioEJCA2017.py
     - [input] サンプルごとのクラスターIDとECv `data/data_RioEJCA2017/ClusterIDs/`
     - [input] 生存時間データ `data/data_RioEJCA2017/RioEJCA2017_pfsos.txt`
     - [fig] クラスターごとの生存時間の分布 `resultE_RioEJCA2017/OS/`
-    - [fig] 生存時間 `resultE_RioEJCA2017/SurvivalAnalysis/Heatmap/`
+    - [fig] 生存時間 `resultE_RioEJCA2017/SurvivalAnalysis/`
 
 
 
