@@ -24,8 +24,11 @@ def load_data(file):
     print(f'# input matrix: {data.shape}')
     return data
 #%%
-def reshape_inputmatrix(data_):
-    data = data_.set_index('name').drop(columns=['Parent', 'Child']).T # (sample * edge)
+def reshape_inputmatrix(data):
+    if 'Parent' in data.columns:
+        data = data.set_index('name').drop(columns=['Parent', 'Child']).T # (sample * edge)
+    else:
+        data = data.set_index('name').T
     return data
 
 #%%
@@ -60,7 +63,6 @@ def plot(result,labels, drug, savepath):
     plt.savefig(savepath, dpi=100, format='png', bbox_inches="tight")  # save
     print(f'[SAVE]: {savepath}')
     return
-
 
 #%%
 def draw_threshold_dependency(result, savepath):
@@ -150,12 +152,17 @@ def get_cluster_by_number(result, number, data, savepath):
 
 def heatmap(data, data_pfsos, labels, savepath, drug):
     # set res
-    list_res_ = [labels[i].split(":")[0] for i in range(len(labels))]
+    if ':' in labels[0]:
+        list_res_ = [labels[i].split(":")[0] for i in range(len(labels))]
+    else:
+        list_res_ = labels
     list_res = []
     for k in range(len(list_res_)):
         res = data_pfsos[data_pfsos.index ==list_res_[k]]["response status"].to_list()
         list_res.append(res)
     list_res = list(itertools.chain.from_iterable(list_res))
+
+    print(len(list_res))
     # set color
     list_colors = []
     for i in list_res:
@@ -170,40 +177,44 @@ def heatmap(data, data_pfsos, labels, savepath, drug):
     return
 
 
+
+#%%
 if __name__ == '__main__':
     # pfsos
     path2 = "data/data_RioEJCA2017/RioEJCA2017_pfsos.txt"
     data_pfsos = load_data(path2)
 
-    file_list = sorted(glob.glob('data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/*.txt'))
+    file_list = sorted(glob.glob('data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_*/*.txt'))
     # ECv data
     for f in file_list:
         #path = 'data/data_SurvivalAnalysisDataSet_RioEJCA2017/SurvivalAnalysisDataSet_ECv_th06/SurvivalAnalysisDataSet_RioEJCA2017_ECv_th06_Irinotecan_10mg_multidose.txt'
 
         drug = f.split("th06_")[1].split("_v")[0].split("_")[0]
         monomulti_label = os.path.basename(f).split("th06_")[1].split("10mg_")[1].split(".tx")[0]
+        datatype = os.path.basename(f).split("RioEJCA2017_")[1].split("_th06")[0]
         print(f'# drug name: {drug}')
         print(f'# mono or multi dose: {monomulti_label}')
-        data_ECv = load_data(f)
+        print(f'# data type: {datatype}')
 
-        input_data = reshape_inputmatrix(data_ECv)
-
+        data_ = load_data(f)
+        input_data = reshape_inputmatrix(data_)
         result, labels = clustering(input_data, data_pfsos)
 
-
-        savepath = f'resultE_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{drug}_{monomulti_label}.png'
+        savepath = f'resultE_RioEJCA2017/Dendrogram/Dendrogram_RioEJCA2017_SelectedSamples_{datatype}_{drug}_{monomulti_label}.png'
         plot(result, labels, drug, savepath)
 
-        savepath2 = f'resultE_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{drug}_{monomulti_label}.png'
+        savepath2 = f'resultE_RioEJCA2017/Threshold/Threshold_RioEJCA2017_SelectedSamples_{datatype}_{drug}_{monomulti_label}.png'
         draw_threshold_dependency(result, savepath2)
 
         # get cluster num & matrix
         k_list = [2,3]
         for k in k_list:
-            savepath3 = f'data/data_RioEJCA2017/ClusterIDs/ClusterIDs_RioEJCA2017_{drug}_k={k}_{monomulti_label}.txt'
+            savepath3 = f'data/data_RioEJCA2017/ClusterIDs/ClusterIDs_RioEJCA2017_{datatype}_{drug}_k={k}_{monomulti_label}.txt'
             clusterIDs = get_cluster_by_number(result, k, input_data, savepath3)
             print(clusterIDs)
 
         # heatmap
-        savepath4 = f'resultE_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{drug}_{monomulti_label}.png'
+        savepath4 = f'resultE_RioEJCA2017/Heatmap/Heatmap_RioEJCA2017_SelectedSamples_{datatype}_{drug}_{monomulti_label}.png'
         heatmap(input_data, data_pfsos, labels, savepath4, drug)
+
+# %%
