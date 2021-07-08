@@ -74,6 +74,7 @@ def survival(data, savepath,drug, k):
     print(f'[SAVE]: {savepath}')
 
     # logrank p-value
+    #for p in [0,1]
     time_1 = data[data["clusterID"] == 0]["os"].values  # k=1, time
     event_1 = data[data["clusterID"] == 0]["os censored"].values  # k=1, event
     time_2 = data[data["clusterID"] == 1]["os"].values  # k=2, time
@@ -94,9 +95,10 @@ if __name__ == '__main__':
 
     file_list = sorted(glob.glob('data/data_RioEJCA2017/ClusterIDs/*.txt'))
     for f in file_list:
-        drug = os.path.basename(f).split("2017_")[1].split("_k=")[0]
-        k = os.path.basename(f).split("_")[3].split("=")[1]
-        monomulti_label = os.path.basename(f).split("_")[4].split(".tx")[0]
+        datatype = os.path.basename(f).split("_")[2]
+        drug = os.path.basename(f).split("_")[3]
+        k = os.path.basename(f).split("_")[4].split("=")[1]
+        monomulti_label = os.path.basename(f).split("_")[5].split(".tx")[0]
         print(f'# drug name: {drug}')
         data_ClusterIDs_ = load_data(f)
 
@@ -107,10 +109,10 @@ if __name__ == '__main__':
         input_data = reshape_inputmatrix(data_ClusterIDs_, data_survival)
 
         #
-        savepath = f"resultE_RioEJCA2017/OS/VisualiveOS_RioEJCA2017_{drug}_{monomulti_label}.png"
+        savepath = f"resultE_RioEJCA2017/OS/VisualiveOS_RioEJCA2017_{datatype}_{drug}_{monomulti_label}.png"
         data_visualization(input_data, savepath, drug)
 
         #
         #k = input_data["clusterID"].nunique()
-        savepath = f"resultE_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{drug}_k={k}_{monomulti_label}.png"
+        savepath = f"resultE_RioEJCA2017/SurvivalAnalysis/SurvivalAnalysis_RioEJCA2017_{datatype}_{drug}_k={k}_{monomulti_label}.png"
         survival(input_data, savepath, drug, k)
